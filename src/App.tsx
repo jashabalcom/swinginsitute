@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AdminRoute } from "@/components/auth/AdminRoute";
 import Index from "./pages/Index";
 import Masterclass from "./pages/Masterclass";
 import TrainAtlanta from "./pages/TrainAtlanta";
@@ -19,6 +20,7 @@ import TrainingRoom from "./pages/TrainingRoom";
 import Book from "./pages/Book";
 import Packages from "./pages/Packages";
 import MyBookings from "./pages/MyBookings";
+import AdminSchedule from "./pages/AdminSchedule";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,6 +87,14 @@ const App = () => (
                 <ProtectedRoute>
                   <MyBookings />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/schedule"
+              element={
+                <AdminRoute>
+                  <AdminSchedule />
+                </AdminRoute>
               }
             />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

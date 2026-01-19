@@ -16,6 +16,9 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";
 import TrainingRoom from "./pages/TrainingRoom";
+import Book from "./pages/Book";
+import Packages from "./pages/Packages";
+import MyBookings from "./pages/MyBookings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +60,30 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <TrainingRoom />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/book"
+              element={
+                <ProtectedRoute>
+                  <Book />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/packages"
+              element={
+                <ProtectedRoute>
+                  <Packages />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-bookings"
+              element={
+                <ProtectedRoute>
+                  <MyBookings />
                 </ProtectedRoute>
               }
             />

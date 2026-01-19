@@ -32,6 +32,11 @@ import NotFound from "./pages/NotFound";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import CompleteAccount from "./pages/CompleteAccount";
+import Academy from "./pages/Academy";
+import AcademyLevel from "./pages/AcademyLevel";
+import AcademyModule from "./pages/AcademyModule";
+import AcademyLesson from "./pages/AcademyLesson";
+import Events from "./pages/Events";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +106,46 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <MyBookings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/academy"
+              element={
+                <ProtectedRoute>
+                  <Academy />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/academy/level/:levelSlug"
+              element={
+                <ProtectedRoute>
+                  <AcademyLevel />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/academy/level/:levelSlug/module/:moduleSlug"
+              element={
+                <ProtectedRoute>
+                  <AcademyModule />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/academy/lesson/:lessonId"
+              element={
+                <ProtectedRoute>
+                  <AcademyLesson />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/events"
+              element={
+                <ProtectedRoute>
+                  <Events />
                 </ProtectedRoute>
               }
             />

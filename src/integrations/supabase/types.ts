@@ -291,6 +291,83 @@ export type Database = {
         }
         Relationships: []
       }
+      curriculum_levels: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_locked: boolean | null
+          level_number: number
+          required_tiers: string[] | null
+          slug: string
+          sort_order: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_locked?: boolean | null
+          level_number: number
+          required_tiers?: string[] | null
+          slug: string
+          sort_order?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_locked?: boolean | null
+          level_number?: number
+          required_tiers?: string[] | null
+          slug?: string
+          sort_order?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
+      curriculum_modules: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          level_id: string
+          slug: string
+          sort_order: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          level_id: string
+          slug: string
+          sort_order?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          level_id?: string
+          slug?: string
+          sort_order?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_modules_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_levels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       direct_messages: {
         Row: {
           content: string
@@ -399,6 +476,174 @@ export type Database = {
           week?: number
         }
         Relationships: []
+      }
+      event_registrations: {
+        Row: {
+          attended: boolean | null
+          event_id: string
+          id: string
+          registered_at: string | null
+          reminder_sent: boolean | null
+          user_id: string
+        }
+        Insert: {
+          attended?: boolean | null
+          event_id: string
+          id?: string
+          registered_at?: string | null
+          reminder_sent?: boolean | null
+          user_id: string
+        }
+        Update: {
+          attended?: boolean | null
+          event_id?: string
+          id?: string
+          registered_at?: string | null
+          reminder_sent?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_time: string
+          event_type: string
+          id: string
+          is_public: boolean | null
+          max_attendees: number | null
+          replay_url: string | null
+          required_tiers: string[] | null
+          start_time: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          zoom_link: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_time: string
+          event_type?: string
+          id?: string
+          is_public?: boolean | null
+          max_attendees?: number | null
+          replay_url?: string | null
+          required_tiers?: string[] | null
+          start_time: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          zoom_link?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_time?: string
+          event_type?: string
+          id?: string
+          is_public?: boolean | null
+          max_attendees?: number | null
+          replay_url?: string | null
+          required_tiers?: string[] | null
+          start_time?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          zoom_link?: string | null
+        }
+        Relationships: []
+      }
+      lesson_completions: {
+        Row: {
+          completed_at: string | null
+          id: string
+          lesson_id: string
+          user_id: string
+          watch_progress_percent: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          lesson_id: string
+          user_id: string
+          watch_progress_percent?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          lesson_id?: string
+          user_id?: string
+          watch_progress_percent?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_preview: boolean | null
+          module_id: string
+          sort_order: number | null
+          title: string
+          video_duration_seconds: number | null
+          video_url: string | null
+          worksheet_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_preview?: boolean | null
+          module_id: string
+          sort_order?: number | null
+          title: string
+          video_duration_seconds?: number | null
+          video_url?: string | null
+          worksheet_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_preview?: boolean | null
+          module_id?: string
+          sort_order?: number | null
+          title?: string
+          video_duration_seconds?: number | null
+          video_url?: string | null
+          worksheet_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_modules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mentions: {
         Row: {
@@ -1127,7 +1372,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "coach" | "member"
+      app_role: "admin" | "coach" | "member" | "parent"
       booking_status:
         | "pending"
         | "confirmed"
@@ -1264,7 +1509,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "coach", "member"],
+      app_role: ["admin", "coach", "member", "parent"],
       booking_status: [
         "pending",
         "confirmed",

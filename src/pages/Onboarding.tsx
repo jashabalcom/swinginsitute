@@ -19,6 +19,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 const playerLevels = [
   { value: "beginner", label: "Beginner", description: "Just starting out, learning the basics" },
@@ -166,7 +167,7 @@ export default function Onboarding() {
                 className="text-center space-y-8"
               >
                 <img 
-                  src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                  src={swingInstituteLogo}
                   alt="Swing Institute"
                   className="h-20 w-auto mx-auto object-contain mb-4"
                 />

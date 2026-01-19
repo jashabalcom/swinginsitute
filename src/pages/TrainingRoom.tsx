@@ -18,6 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 interface Channel {
   id: string;
@@ -278,7 +279,7 @@ export default function TrainingRoom() {
             </Button>
             <Link to="/" className="inline-block mb-2">
               <img 
-                src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                src={swingInstituteLogo}
                 alt="Swing Institute"
                 className="h-10 w-auto object-contain"
               />

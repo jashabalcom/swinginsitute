@@ -4,6 +4,7 @@ import { Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import logo from "@/assets/logo.jpg";
 
 const navLinks = [
   { name: "Train in Atlanta", href: "/train-atlanta" },
@@ -22,13 +23,18 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              src={logo} 
+              alt="Swing Institute" 
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover"
+            />
             <div className="flex flex-col">
-              <span className="font-display text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              <span className="font-display text-lg md:text-xl font-bold tracking-tight text-foreground">
                 SWING INSTITUTE
               </span>
-              <span className="text-[10px] md:text-xs text-muted-foreground tracking-widest uppercase">
-                Elite Baseball Development
+              <span className="text-[9px] md:text-[10px] text-muted-foreground tracking-widest uppercase">
+                Baseball Development
               </span>
             </div>
           </Link>

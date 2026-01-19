@@ -165,9 +165,11 @@ export default function Onboarding() {
                 transition={{ duration: 0.3 }}
                 className="text-center space-y-8"
               >
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4">
-                  <Sparkles className="w-10 h-10 text-primary" />
-                </div>
+                <img 
+                  src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                  alt="Swing Institute"
+                  className="h-20 w-auto mx-auto object-contain mb-4"
+                />
                 
                 <div>
                   <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">

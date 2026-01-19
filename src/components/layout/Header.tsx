@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { name: "Train in Atlanta", href: "/train-atlanta" },
@@ -14,6 +15,7 @@ const navLinks = [
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
@@ -42,16 +44,27 @@ export function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="ghost" className="text-foreground hover:text-primary">
-                Login
-              </Button>
-            </Link>
-            <Link to="/masterclass">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
-                Start Free
-              </Button>
-            </Link>
+            {user ? (
+              <Link to="/dashboard">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                  <User className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" className="text-foreground hover:text-primary">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/masterclass">
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                    Start Free
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -86,16 +99,27 @@ export function Header() {
                 </Link>
               ))}
               <div className="pt-4 border-t border-border flex flex-col space-y-3">
-                <Link to="/login" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/masterclass" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full bg-primary hover:bg-primary/90">
-                    Start Free
-                  </Button>
-                </Link>
+                {user ? (
+                  <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full bg-primary hover:bg-primary/90">
+                      <User className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/login" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link to="/masterclass" onClick={() => setIsOpen(false)}>
+                      <Button className="w-full bg-primary hover:bg-primary/90">
+                        Start Free
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </motion.div>

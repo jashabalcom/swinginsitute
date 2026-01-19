@@ -52,6 +52,13 @@ export default function Signup() {
             className="max-w-md mx-auto"
           >
             <div className="text-center mb-8">
+              <Link to="/" className="inline-block mb-6">
+                <img 
+                  src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                  alt="Swing Institute"
+                  className="h-16 w-auto mx-auto object-contain"
+                />
+              </Link>
               <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">
                 JOIN THE <span className="text-primary">INSTITUTE</span>
               </h1>

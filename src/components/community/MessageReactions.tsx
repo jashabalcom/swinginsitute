@@ -1,13 +1,20 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { SmilePlus } from "lucide-react";
+import { SmilePlus, Lock, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Reaction {
   id: string;
@@ -31,9 +38,12 @@ export function MessageReactions({
   currentUserId,
   onReactionChange,
 }: MessageReactionsProps) {
+  const { profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  
+  const isFreeTier = profile?.is_free_tier ?? false;
 
   // Group reactions by emoji
   const reactionGroups = reactions.reduce((acc, r) => {
@@ -48,7 +58,7 @@ export function MessageReactions({
   }, {} as Record<string, { count: number; hasUserReacted: boolean }>);
 
   const handleReaction = async (emoji: string) => {
-    if (loading) return;
+    if (loading || isFreeTier) return;
     setLoading(true);
 
     try {
@@ -114,34 +124,52 @@ export function MessageReactions({
       </AnimatePresence>
 
       {/* Add reaction button */}
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <button
-            className="p-1 rounded-full hover:bg-muted/50 transition-colors opacity-0 group-hover:opacity-100"
-            disabled={loading}
+      {isFreeTier ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className="p-1 rounded-full hover:bg-muted/50 transition-colors opacity-0 group-hover:opacity-100 cursor-not-allowed"
+            >
+              <SmilePlus className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs">
+            <p className="text-sm">Upgrade to react</p>
+            <Link to="/checkout" className="text-primary text-xs flex items-center gap-1 mt-1">
+              Upgrade now <ArrowRight className="w-3 h-3" />
+            </Link>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverTrigger asChild>
+            <button
+              className="p-1 rounded-full hover:bg-muted/50 transition-colors opacity-0 group-hover:opacity-100"
+              disabled={loading}
+            >
+              <SmilePlus className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-auto p-2 bg-card border-border"
+            align="start"
+            side="top"
           >
-            <SmilePlus className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-2 bg-card border-border"
-          align="start"
-          side="top"
-        >
-          <div className="flex gap-1">
-            {AVAILABLE_REACTIONS.map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() => handleReaction(emoji)}
-                disabled={loading}
-                className="p-2 text-lg hover:bg-muted rounded transition-colors"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
+            <div className="flex gap-1">
+              {AVAILABLE_REACTIONS.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleReaction(emoji)}
+                  disabled={loading}
+                  className="p-2 text-lg hover:bg-muted rounded transition-colors"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 }

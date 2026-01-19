@@ -4,6 +4,7 @@ import { Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { NotificationBell } from "@/components/community/NotificationBell";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 const navLinks = [
@@ -43,12 +44,15 @@ export function Header() {
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
             {user ? (
-              <Link to="/dashboard">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
-                  <User className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
+              <>
+                <NotificationBell />
+                <Link to="/dashboard">
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                    <User className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+              </>
             ) : (
               <>
                 <Link to="/login">
@@ -98,12 +102,17 @@ export function Header() {
               ))}
               <div className="pt-4 border-t border-border flex flex-col space-y-3">
                 {user ? (
-                  <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full bg-primary hover:bg-primary/90">
-                      <User className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </Button>
-                  </Link>
+                  <>
+                    <div className="flex justify-center">
+                      <NotificationBell />
+                    </div>
+                    <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                      <Button className="w-full bg-primary hover:bg-primary/90">
+                        <User className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                  </>
                 ) : (
                   <>
                     <Link to="/login" onClick={() => setIsOpen(false)}>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Megaphone,
   Target,
@@ -276,6 +276,13 @@ export default function TrainingRoom() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
+            <Link to="/" className="inline-block mb-2">
+              <img 
+                src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                alt="Swing Institute"
+                className="h-10 w-auto object-contain"
+              />
+            </Link>
             <h2 className="font-display text-xl font-bold text-foreground">
               Training Room
             </h2>

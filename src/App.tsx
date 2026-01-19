@@ -33,6 +33,7 @@ import NotFound from "./pages/NotFound";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import CompleteAccount from "./pages/CompleteAccount";
+import Upgrade from "./pages/Upgrade";
 import Academy from "./pages/Academy";
 import AcademyLevel from "./pages/AcademyLevel";
 import AcademyModule from "./pages/AcademyModule";
@@ -60,6 +61,14 @@ const App = () => (
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/complete-account" element={<CompleteAccount />} />
+            <Route
+              path="/upgrade"
+              element={
+                <ProtectedRoute>
+                  <Upgrade />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/free-signup" element={<FreeSignup />} />

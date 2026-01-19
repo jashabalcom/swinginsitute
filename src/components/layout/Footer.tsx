@@ -110,7 +110,7 @@ export function Footer() {
             </p>
             {isAdmin && (
               <Link
-                to="/admin/schedule"
+                to="/admin"
                 className="text-muted-foreground/50 hover:text-muted-foreground text-xs transition-colors"
               >
                 Admin

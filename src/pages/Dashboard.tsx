@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -8,8 +8,6 @@ import {
   Crown,
   CreditCard,
   LogOut,
-  User,
-  Settings,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
@@ -19,7 +17,6 @@ import { PhaseProgressCard } from "@/components/dashboard/PhaseProgressCard";
 import { WeeklyDrillsCard } from "@/components/dashboard/WeeklyDrillsCard";
 import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
-import { supabase } from "@/integrations/supabase/client";
 
 const tierBadgeColors: Record<string, string> = {
   starter: "tier-starter",
@@ -31,7 +28,6 @@ const tierBadgeColors: Record<string, string> = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, profile, signOut, isOnboardingComplete, loading, profileLoading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
   const {
     drills,
     submissions,
@@ -55,21 +51,6 @@ export default function Dashboard() {
       navigate("/onboarding");
     }
   }, [loading, profileLoading, profile, navigate]);
-
-  // Check if user is admin
-  useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      setIsAdmin(!!data);
-    };
-    checkAdmin();
-  }, [user]);
 
   const memberName = profile?.player_name || profile?.full_name || user?.email?.split('@')[0] || "Member";
   const tier = profile?.membership_tier || "starter";
@@ -124,14 +105,6 @@ export default function Dashboard() {
               </div>
               
               <div className="flex flex-wrap gap-3">
-                {isAdmin && (
-                  <Link to="/admin/schedule">
-                    <Button variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-500 hover:text-white">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Admin
-                    </Button>
-                  </Link>
-                )}
                 <Link to="/training-room">
                   <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
                     <MessageSquare className="w-4 h-4 mr-2" />

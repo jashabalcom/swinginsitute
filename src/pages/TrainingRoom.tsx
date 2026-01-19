@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, Users } from "lucide-react";
+import { Menu, Users, Home, MessageCircle, PlusCircle, User } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -12,6 +12,7 @@ import { PostFeed } from "@/components/community/PostFeed";
 import { MemberDirectory } from "@/components/community/MemberDirectory";
 import { ConversationList } from "@/components/community/ConversationList";
 import { DirectMessagePanel } from "@/components/community/DirectMessagePanel";
+import { cn } from "@/lib/utils";
 
 interface Channel {
   id: string;
@@ -147,7 +148,7 @@ export default function TrainingRoom() {
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex overflow-hidden pb-16 lg:pb-0">
             <div className="flex-1 overflow-y-auto p-4 lg:p-6">
               {viewMode === "feed" && activeChannel && (
                 <div className="max-w-2xl mx-auto space-y-6">
@@ -190,6 +191,52 @@ export default function TrainingRoom() {
             <MemberDirectory onStartDM={handleStartDM} />
           </SheetContent>
         </Sheet>
+
+        {/* Mobile Bottom Navigation */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border">
+          <div className="flex items-center justify-around h-16 px-2">
+            <button
+              onClick={() => { setViewMode("feed"); if (channels[0]) setActiveChannel(channels[0]); }}
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-lg transition-all",
+                viewMode === "feed" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Home className="h-5 w-5" />
+              <span className="text-[10px] font-medium">Feed</span>
+            </button>
+            <button
+              onClick={() => setViewMode("dm-list")}
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-lg transition-all",
+                viewMode === "dm-list" || viewMode === "dm-chat" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-[10px] font-medium">DMs</span>
+            </button>
+            <button
+              onClick={() => setShowMobileMenu(true)}
+              className="bg-primary text-primary-foreground -mt-4 shadow-lg rounded-full p-3"
+            >
+              <PlusCircle className="h-6 w-6" />
+            </button>
+            <button
+              onClick={() => setShowMembers(true)}
+              className="flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-lg transition-all text-muted-foreground hover:text-foreground"
+            >
+              <Users className="h-5 w-5" />
+              <span className="text-[10px] font-medium">Members</span>
+            </button>
+            <button
+              onClick={() => navigate("/settings")}
+              className="flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-lg transition-all text-muted-foreground hover:text-foreground"
+            >
+              <User className="h-5 w-5" />
+              <span className="text-[10px] font-medium">Profile</span>
+            </button>
+          </div>
+        </nav>
       </div>
     </div>
   );

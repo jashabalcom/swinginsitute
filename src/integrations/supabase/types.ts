@@ -14,6 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_times: {
+        Row: {
+          coach_id: string
+          created_at: string
+          end_datetime: string
+          id: string
+          reason: string | null
+          start_datetime: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          end_datetime: string
+          id?: string
+          reason?: string | null
+          start_datetime: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          end_datetime?: string
+          id?: string
+          reason?: string | null
+          start_datetime?: string
+        }
+        Relationships: []
+      }
+      booking_participants: {
+        Row: {
+          booking_id: string
+          checked_in: boolean
+          checked_in_at: string | null
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          booking_id: string
+          checked_in?: boolean
+          checked_in_at?: string | null
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          booking_id?: string
+          checked_in?: boolean
+          checked_in_at?: string | null
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_participants_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          amount_paid: number | null
+          cancelled_at: string | null
+          coach_id: string
+          created_at: string
+          end_time: string
+          id: string
+          notes: string | null
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          purchased_package_id: string | null
+          service_type_id: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["booking_status"]
+          stripe_payment_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number | null
+          cancelled_at?: string | null
+          coach_id: string
+          created_at?: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          purchased_package_id?: string | null
+          service_type_id?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          stripe_payment_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number | null
+          cancelled_at?: string | null
+          coach_id?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          purchased_package_id?: string | null
+          service_type_id?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          stripe_payment_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_purchased_package_id_fkey"
+            columns: ["purchased_package_id"]
+            isOneToOne: false
+            referencedRelation: "purchased_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       channels: {
         Row: {
           created_at: string
@@ -41,6 +172,39 @@ export type Database = {
           is_private?: boolean | null
           name?: string
           slug?: string
+        }
+        Relationships: []
+      }
+      coach_availability: {
+        Row: {
+          coach_id: string
+          created_at: string
+          day_of_week: number | null
+          end_time: string
+          id: string
+          is_recurring: boolean
+          specific_date: string | null
+          start_time: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          day_of_week?: number | null
+          end_time: string
+          id?: string
+          is_recurring?: boolean
+          specific_date?: string | null
+          start_time: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          day_of_week?: number | null
+          end_time?: string
+          id?: string
+          is_recurring?: boolean
+          specific_date?: string | null
+          start_time?: string
         }
         Relationships: []
       }
@@ -150,6 +314,56 @@ export type Database = {
           },
         ]
       }
+      packages: {
+        Row: {
+          base_price: number
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          member_price: number
+          name: string
+          savings_amount: number | null
+          service_type_id: string | null
+          session_count: number
+          validity_days: number
+        }
+        Insert: {
+          base_price: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          member_price: number
+          name: string
+          savings_amount?: number | null
+          service_type_id?: string | null
+          session_count: number
+          validity_days?: number
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          member_price?: number
+          name?: string
+          savings_amount?: number | null
+          service_type_id?: string | null
+          session_count?: number
+          validity_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packages_service_type_id_fkey"
+            columns: ["service_type_id"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phase_progress: {
         Row: {
           completed_at: string | null
@@ -234,6 +448,92 @@ export type Database = {
         }
         Relationships: []
       }
+      purchased_packages: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          package_id: string | null
+          purchased_at: string
+          sessions_remaining: number
+          sessions_total: number
+          status: Database["public"]["Enums"]["package_status"]
+          stripe_payment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          package_id?: string | null
+          purchased_at?: string
+          sessions_remaining: number
+          sessions_total: number
+          status?: Database["public"]["Enums"]["package_status"]
+          stripe_payment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          package_id?: string | null
+          purchased_at?: string
+          sessions_remaining?: number
+          sessions_total?: number
+          status?: Database["public"]["Enums"]["package_status"]
+          stripe_payment_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchased_packages_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_types: {
+        Row: {
+          base_price: number
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          max_participants: number
+          member_price: number
+          name: string
+          service_type: Database["public"]["Enums"]["service_type"]
+        }
+        Insert: {
+          base_price: number
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          max_participants?: number
+          member_price: number
+          name: string
+          service_type?: Database["public"]["Enums"]["service_type"]
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          max_participants?: number
+          member_price?: number
+          name?: string
+          service_type?: Database["public"]["Enums"]["service_type"]
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -312,6 +612,15 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "coach" | "member"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "completed"
+        | "cancelled"
+        | "no_show"
+      package_status: "active" | "expired" | "depleted"
+      payment_method: "credits" | "package" | "direct_pay"
+      service_type: "lesson" | "class" | "camp" | "assessment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -440,6 +749,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "coach", "member"],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "completed",
+        "cancelled",
+        "no_show",
+      ],
+      package_status: ["active", "expired", "depleted"],
+      payment_method: ["credits", "package", "direct_pay"],
+      service_type: ["lesson", "class", "camp", "assessment"],
     },
   },
 } as const

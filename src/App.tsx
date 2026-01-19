@@ -23,6 +23,7 @@ import MyBookings from "./pages/MyBookings";
 import AdminSchedule from "./pages/AdminSchedule";
 import AdminServiceTypes from "./pages/AdminServiceTypes";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminMembers from "./pages/AdminMembers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -112,6 +113,14 @@ const App = () => (
               element={
                 <AdminRoute>
                   <AdminServiceTypes />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/members"
+              element={
+                <AdminRoute>
+                  <AdminMembers />
                 </AdminRoute>
               }
             />

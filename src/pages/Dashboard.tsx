@@ -8,14 +8,18 @@ import {
   Crown,
   CreditCard,
   LogOut,
+  Settings,
+  Video,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { PhaseProgressCard } from "@/components/dashboard/PhaseProgressCard";
 import { WeeklyDrillsCard } from "@/components/dashboard/WeeklyDrillsCard";
 import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
+import { CoachFeedbackCard } from "@/components/dashboard/CoachFeedbackCard";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 const tierBadgeColors: Record<string, string> = {
@@ -86,6 +90,14 @@ export default function Dashboard() {
                     className="h-12 w-auto object-contain"
                   />
                 </Link>
+                <Link to="/settings" className="flex-shrink-0">
+                  <Avatar className="w-12 h-12 border-2 border-border hover:border-primary transition-colors cursor-pointer">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt={memberName} />
+                    <AvatarFallback className="bg-muted text-muted-foreground font-display font-bold">
+                      {memberName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
                 <div>
                   <div className="flex items-center gap-3">
                     <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">
@@ -105,6 +117,14 @@ export default function Dashboard() {
               </div>
               
               <div className="flex flex-wrap gap-3">
+                <Button 
+                  variant="default" 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => window.open("https://app.onform.io", "_blank")}
+                >
+                  <Video className="w-4 h-4 mr-2" />
+                  Submit Swing
+                </Button>
                 <Link to="/training-room">
                   <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
                     <MessageSquare className="w-4 h-4 mr-2" />
@@ -117,9 +137,13 @@ export default function Dashboard() {
                     Book Session
                   </Button>
                 </Link>
+                <Link to="/settings">
+                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </Link>
                 <Button variant="ghost" onClick={signOut} className="text-muted-foreground hover:text-foreground">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
+                  <LogOut className="w-4 h-4" />
                 </Button>
               </div>
             </div>
@@ -147,6 +171,12 @@ export default function Dashboard() {
                 onAdvance={advanceProgress}
                 currentWeek={currentWeek}
                 weeksPerPhase={WEEKS_PER_PHASE}
+              />
+
+              {/* Coach Feedback Status */}
+              <CoachFeedbackCard
+                submissions={submissions}
+                feedbackFrequency={profile?.feedback_frequency || "weekly"}
               />
 
               {/* Video Submissions */}

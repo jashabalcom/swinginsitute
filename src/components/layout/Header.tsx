@@ -89,12 +89,12 @@ export function Header() {
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden bg-card border-t border-border"
           >
-            <nav className="container mx-auto px-4 py-6 flex flex-col space-y-4">
+            <nav className="container mx-auto px-6 py-8 flex flex-col space-y-5">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.href}
-                  className="nav-link py-2"
+                  className="nav-link py-3"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}

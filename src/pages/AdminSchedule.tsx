@@ -68,7 +68,7 @@ export default function AdminSchedule() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="pt-24 pb-12">
+      <main className="pt-20 pb-12">
         <div className="container mx-auto px-4 max-w-6xl">
           <Link to="/dashboard" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />

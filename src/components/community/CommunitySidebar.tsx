@@ -47,9 +47,9 @@ export function CommunitySidebar({
   const progress = getProgressToNextLevel(points);
 
   return (
-    <div className="flex flex-col h-full bg-[hsl(var(--background))]">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="p-4">
+      <div className="p-4 pb-3 border-b border-border/30">
         <h2 className="font-display text-lg font-bold text-foreground">Community</h2>
       </div>
 

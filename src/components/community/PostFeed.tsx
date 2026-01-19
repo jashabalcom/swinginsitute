@@ -208,8 +208,16 @@ export function PostFeed({ channelId, refreshTrigger }: PostFeedProps) {
 
   if (posts.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
+      <div className="text-center py-16 px-4">
+        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
+          <svg className="w-10 h-10 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </div>
+        <h3 className="font-display text-lg font-semibold mb-1">Start the conversation</h3>
+        <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+          Be the first to share something with the community!
+        </p>
       </div>
     );
   }

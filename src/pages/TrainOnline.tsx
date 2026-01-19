@@ -109,10 +109,12 @@ export default function TrainOnline() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button className="btn-hero group">
-                  Join Now
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                <Link to="/signup?tier=pro">
+                  <Button className="btn-hero group">
+                    Join Now
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
                 <Link to="/masterclass">
                   <Button variant="outline" className="btn-secondary-outline">
                     Watch Free Masterclass
@@ -220,16 +222,18 @@ export default function TrainOnline() {
                     ))}
                   </ul>
 
-                  <Button
-                    className={`w-full mt-auto ${
-                      tier.popular
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                        : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
-                    }`}
-                  >
-                    {tier.cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Link to={`/signup?tier=${tier.name.toLowerCase()}`} className="w-full mt-auto block">
+                    <Button
+                      className={`w-full ${
+                        tier.popular
+                          ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                          : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
+                      }`}
+                    >
+                      {tier.cta}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </motion.div>
               ))}
             </div>

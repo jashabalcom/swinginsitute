@@ -96,8 +96,9 @@ serve(async (req) => {
               monthly_credits: tierConfig.monthlyCredits,
               feedback_frequency: tierConfig.feedbackFrequency,
               credits_remaining: tierConfig.monthlyCredits === -1 ? 999 : tierConfig.monthlyCredits,
+              is_free_tier: false, // Convert free tier users to paid
             }, { onConflict: "user_id" });
-            logStep("Profile updated", { tier, userId: existingUserId });
+            logStep("Profile updated", { tier, userId: existingUserId, convertedFromFreeTier: true });
           }
         }
       }

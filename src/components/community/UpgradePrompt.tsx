@@ -32,7 +32,7 @@ export function UpgradePrompt({
               <p className="text-sm text-muted-foreground">{description}</p>
             </div>
           </div>
-          <Link to="/checkout">
+          <Link to="/upgrade">
             <Button size="sm" className="btn-hero">
               Upgrade Now
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -55,7 +55,7 @@ export function UpgradePrompt({
           </div>
           <h3 className="font-display text-lg font-bold mb-2">{title}</h3>
           <p className="text-sm text-muted-foreground mb-4">{description}</p>
-          <Link to="/checkout">
+          <Link to="/upgrade">
             <Button className="btn-hero">
               Upgrade Now
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -77,7 +77,7 @@ export function UpgradePrompt({
       </div>
       <h3 className="font-display text-lg font-bold mb-2">{title}</h3>
       <p className="text-sm text-muted-foreground mb-4">{description}</p>
-      <Link to="/checkout">
+      <Link to="/upgrade">
         <Button className="btn-hero">
           Upgrade Now
           <ArrowRight className="w-4 h-4 ml-2" />

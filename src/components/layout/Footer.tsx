@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
+import { useAdminSchedule } from "@/hooks/useAdminSchedule";
 
 const footerLinks = {
   training: [
@@ -20,6 +21,8 @@ const footerLinks = {
 };
 
 export function Footer() {
+  const { isAdmin } = useAdminSchedule();
+
   return (
     <footer className="bg-card border-t border-border">
       <div className="container mx-auto px-4 py-12 md:py-16">
@@ -101,9 +104,19 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-muted-foreground text-sm">
-            © {new Date().getFullYear()} Swing Institute. All Rights Reserved.
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-muted-foreground text-sm">
+              © {new Date().getFullYear()} Swing Institute. All Rights Reserved.
+            </p>
+            {isAdmin && (
+              <Link
+                to="/admin/schedule"
+                className="text-muted-foreground/50 hover:text-muted-foreground text-xs transition-colors"
+              >
+                Admin
+              </Link>
+            )}
+          </div>
           <div className="flex items-center space-x-6">
             <a
               href="https://instagram.com"

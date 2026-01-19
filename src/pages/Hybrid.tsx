@@ -197,17 +197,19 @@ export default function Hybrid() {
                     ))}
                   </ul>
 
-                  <Button
-                    className={`w-full mt-auto ${
-                      tier.popular
-                        ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                        : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
-                    }`}
-                    size="lg"
-                  >
-                    Get Started
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
+                  <Link to={`/signup?plan=${tier.name.toLowerCase().replace(' ', '-')}`} className="w-full mt-auto block">
+                    <Button
+                      className={`w-full ${
+                        tier.popular
+                          ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                          : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
+                      }`}
+                      size="lg"
+                    >
+                      Get Started
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
                 </motion.div>
               ))}
             </div>
@@ -231,10 +233,12 @@ export default function Hybrid() {
                 find the right plan for your family.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button className="btn-hero group">
-                  Book a Parent Call
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                <Link to="/masterclass">
+                  <Button className="btn-hero group">
+                    Book a Parent Call
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
                 <Link to="/masterclass">
                   <Button variant="outline" className="btn-secondary-outline">
                     Watch Free Masterclass

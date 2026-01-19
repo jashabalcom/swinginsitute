@@ -71,10 +71,12 @@ export default function TrainAtlanta() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                  <Button className="btn-hero group">
-                    Book Your Session
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
+                  <Link to="/signup">
+                    <Button className="btn-hero group">
+                      Book Your Session
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
                   <Link to="/masterclass">
                     <Button variant="outline" className="btn-secondary-outline">
                       Watch Free Masterclass First
@@ -198,15 +200,17 @@ export default function TrainAtlanta() {
                     </span>
                   )}
                   <p className="text-sm text-muted-foreground mb-6">{pkg.description}</p>
-                  <Button
-                    className={`w-full ${
-                      pkg.popular
-                        ? "bg-primary hover:bg-primary/90"
-                        : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
-                    }`}
-                  >
-                    Book Now
-                  </Button>
+                  <Link to="/signup" className="w-full block">
+                    <Button
+                      className={`w-full ${
+                        pkg.popular
+                          ? "bg-primary hover:bg-primary/90"
+                          : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
+                      }`}
+                    >
+                      Book Now
+                    </Button>
+                  </Link>
                 </motion.div>
               ))}
             </div>
@@ -229,10 +233,12 @@ export default function TrainAtlanta() {
                 Book a Parent Game Plan Call to discuss your player's goals and 
                 see if training with Coach Jasha is the right fit.
               </p>
-              <Button className="btn-hero group">
-                Book Your Parent Call
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              <Link to="/masterclass">
+                <Button className="btn-hero group">
+                  Book Your Parent Call
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
             </motion.div>
           </div>
         </section>

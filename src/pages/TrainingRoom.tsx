@@ -13,6 +13,7 @@ import {
   ImagePlus,
   Menu,
   X,
+  MessageCircle,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MemberDirectory } from "@/components/community/MemberDirectory";
 import { MessageReactions } from "@/components/community/MessageReactions";
+import { DirectMessagePanel } from "@/components/community/DirectMessagePanel";
+import { ConversationList } from "@/components/community/ConversationList";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 interface Channel {
@@ -53,6 +56,14 @@ interface Message {
   reactions?: Reaction[];
 }
 
+type ViewMode = "channels" | "dm-list" | "dm-chat";
+
+interface DMUser {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
 const iconMap: Record<string, typeof Megaphone> = {
   megaphone: Megaphone,
   target: Target,
@@ -76,6 +87,9 @@ export default function TrainingRoom() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("channels");
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [activeDMUser, setActiveDMUser] = useState<DMUser | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -384,6 +398,13 @@ export default function TrainingRoom() {
 
   const messageGroups = groupMessagesByDate(messages);
 
+  const handleStartDM = (conversationId: string, otherUser: DMUser) => {
+    setActiveConversationId(conversationId);
+    setActiveDMUser(otherUser);
+    setViewMode("dm-chat");
+    setShowMemberDirectory(false);
+  };
+
   // Channel sidebar content (shared between desktop and mobile)
   const ChannelSidebar = () => (
     <>
@@ -417,15 +438,37 @@ export default function TrainingRoom() {
       
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
+          {/* DMs Button */}
+          <button
+            onClick={() => {
+              setViewMode("dm-list");
+              setActiveChannel(null);
+              setShowMobileChannels(false);
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+              viewMode === "dm-list" || viewMode === "dm-chat"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            }`}
+          >
+            <MessageCircle className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm font-medium truncate">
+              Direct Messages
+            </span>
+          </button>
+
+          <div className="my-2 border-t border-border" />
+
           {channels.map((channel) => {
             const IconComponent = iconMap[channel.icon || "message-square"] || Hash;
-            const isActive = activeChannel?.id === channel.id;
+            const isActive = activeChannel?.id === channel.id && viewMode === "channels";
             
             return (
               <button
                 key={channel.id}
                 onClick={() => {
                   setActiveChannel(channel);
+                  setViewMode("channels");
                   setShowMobileChannels(false);
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
@@ -462,7 +505,33 @@ export default function TrainingRoom() {
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-w-0">
-          {activeChannel ? (
+          {/* DM Views */}
+          {viewMode === "dm-list" && (
+            <ConversationList
+              onSelectConversation={(convId, otherUser) => {
+                setActiveConversationId(convId);
+                setActiveDMUser(otherUser);
+                setViewMode("dm-chat");
+              }}
+              onBack={() => {
+                setViewMode("channels");
+                if (channels.length > 0) {
+                  setActiveChannel(channels[0]);
+                }
+              }}
+            />
+          )}
+
+          {viewMode === "dm-chat" && activeConversationId && activeDMUser && (
+            <DirectMessagePanel
+              conversationId={activeConversationId}
+              otherUser={activeDMUser}
+              onBack={() => setViewMode("dm-list")}
+            />
+          )}
+
+          {/* Channel View */}
+          {viewMode === "channels" && activeChannel ? (
             <>
               {/* Channel Header */}
               <motion.div
@@ -692,13 +761,14 @@ export default function TrainingRoom() {
                   {showMemberDirectory && (
                     <MemberDirectory
                       onClose={() => setShowMemberDirectory(false)}
+                      onStartDM={handleStartDM}
                       className="hidden lg:flex w-64 flex-shrink-0"
                     />
                   )}
                 </AnimatePresence>
               </div>
             </>
-          ) : (
+          ) : viewMode === "channels" && (
             <div className="flex-1 flex items-center justify-center">
               <p className="text-muted-foreground">Select a channel to start chatting</p>
             </div>
@@ -708,7 +778,11 @@ export default function TrainingRoom() {
         {/* Member Directory Sheet (Mobile/Tablet) */}
         <Sheet open={showMemberDirectory} onOpenChange={setShowMemberDirectory}>
           <SheetContent side="right" className="w-72 p-0 bg-card border-border lg:hidden">
-            <MemberDirectory onClose={() => setShowMemberDirectory(false)} className="h-full" />
+            <MemberDirectory 
+              onClose={() => setShowMemberDirectory(false)} 
+              onStartDM={handleStartDM}
+              className="h-full" 
+            />
           </SheetContent>
         </Sheet>
       </main>

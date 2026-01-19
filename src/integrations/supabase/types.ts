@@ -44,6 +44,77 @@ export type Database = {
         }
         Relationships: []
       }
+      drill_completions: {
+        Row: {
+          completed_at: string
+          drill_id: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          drill_id: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          drill_id?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drill_completions_drill_id_fkey"
+            columns: ["drill_id"]
+            isOneToOne: false
+            referencedRelation: "drills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drills: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_priority: boolean | null
+          phase: string
+          sort_order: number | null
+          title: string
+          video_url: string | null
+          week: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_priority?: boolean | null
+          phase: string
+          sort_order?: number | null
+          title: string
+          video_url?: string | null
+          week: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_priority?: boolean | null
+          phase?: string
+          sort_order?: number | null
+          title?: string
+          video_url?: string | null
+          week?: number
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           channel_id: string
@@ -78,6 +149,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      phase_progress: {
+        Row: {
+          completed_at: string | null
+          id: string
+          phase: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          phase: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          phase?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -154,6 +249,51 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      video_submissions: {
+        Row: {
+          coach_feedback: string | null
+          description: string | null
+          id: string
+          phase: string
+          reviewed_at: string | null
+          status: string
+          submitted_at: string
+          thumbnail_url: string | null
+          title: string
+          user_id: string
+          video_url: string
+          week: number
+        }
+        Insert: {
+          coach_feedback?: string | null
+          description?: string | null
+          id?: string
+          phase: string
+          reviewed_at?: string | null
+          status?: string
+          submitted_at?: string
+          thumbnail_url?: string | null
+          title: string
+          user_id: string
+          video_url: string
+          week: number
+        }
+        Update: {
+          coach_feedback?: string | null
+          description?: string | null
+          id?: string
+          phase?: string
+          reviewed_at?: string | null
+          status?: string
+          submitted_at?: string
+          thumbnail_url?: string | null
+          title?: string
+          user_id?: string
+          video_url?: string
+          week?: number
         }
         Relationships: []
       }

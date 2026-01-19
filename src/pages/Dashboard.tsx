@@ -78,9 +78,13 @@ export default function Dashboard() {
           >
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-card border border-border flex items-center justify-center">
-                  <User className="w-7 h-7 text-muted-foreground" />
-                </div>
+                <Link to="/">
+                  <img 
+                    src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                    alt="Swing Institute"
+                    className="h-12 w-auto object-contain"
+                  />
+                </Link>
                 <div>
                   <div className="flex items-center gap-3">
                     <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">

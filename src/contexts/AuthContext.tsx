@@ -18,6 +18,7 @@ interface Profile {
   current_phase: string;
   current_week: number;
   avatar_url: string | null;
+  created_at: string;
 }
 
 interface AuthContextType {

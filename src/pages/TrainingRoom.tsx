@@ -35,6 +35,7 @@ interface Message {
   content: string;
   created_at: string;
   displayName?: string;
+  avatarUrl?: string | null;
 }
 
 const iconMap: Record<string, typeof Megaphone> = {
@@ -112,17 +113,27 @@ export default function TrainingRoom() {
       const userIds = [...new Set(messagesData.map(m => m.user_id))];
       const { data: profilesData } = await supabase
         .from("profiles")
-        .select("user_id, player_name, full_name")
+        .select("user_id, player_name, full_name, avatar_url")
         .in("user_id", userIds);
       
       const profileMap = new Map(
-        profilesData?.map(p => [p.user_id, p.player_name || p.full_name || "Anonymous"]) || []
+        profilesData?.map(p => [
+          p.user_id, 
+          { 
+            name: p.player_name || p.full_name || "Anonymous",
+            avatarUrl: p.avatar_url
+          }
+        ]) || []
       );
       
-      const messagesWithNames: Message[] = messagesData.map(msg => ({
-        ...msg,
-        displayName: profileMap.get(msg.user_id) || "Anonymous",
-      }));
+      const messagesWithNames: Message[] = messagesData.map(msg => {
+        const profileInfo = profileMap.get(msg.user_id);
+        return {
+          ...msg,
+          displayName: profileInfo?.name || "Anonymous",
+          avatarUrl: profileInfo?.avatarUrl || null,
+        };
+      });
       
       setMessages(messagesWithNames);
     }
@@ -150,13 +161,14 @@ export default function TrainingRoom() {
           // Fetch the profile for this user
           const { data: profileData } = await supabase
             .from("profiles")
-            .select("player_name, full_name")
+            .select("player_name, full_name, avatar_url")
             .eq("user_id", newMsg.user_id)
             .single();
           
           const messageWithName: Message = {
             ...newMsg,
             displayName: profileData?.player_name || profileData?.full_name || "Anonymous",
+            avatarUrl: profileData?.avatar_url || null,
           };
           
           setMessages((prev) => [...prev, messageWithName]);
@@ -396,12 +408,20 @@ export default function TrainingRoom() {
                                 transition={{ delay: msgIndex * 0.02 }}
                                 className={`flex gap-3 ${isOwnMessage ? "flex-row-reverse" : ""}`}
                               >
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
                                   isOwnMessage ? "bg-primary" : "bg-secondary"
                                 }`}>
-                                  <span className="text-xs font-semibold text-white">
-                                    {displayName.charAt(0).toUpperCase()}
-                                  </span>
+                                  {message.avatarUrl ? (
+                                    <img 
+                                      src={message.avatarUrl} 
+                                      alt={displayName}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <span className="text-xs font-semibold text-white">
+                                      {displayName.charAt(0).toUpperCase()}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className={`flex-1 max-w-xl ${isOwnMessage ? "text-right" : ""}`}>
                                   <div className={`flex items-center gap-2 mb-1 ${isOwnMessage ? "justify-end" : ""}`}>

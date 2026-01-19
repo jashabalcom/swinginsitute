@@ -33,6 +33,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   isOnboardingComplete: boolean;
+  isFreeTier: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -143,6 +144,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Only consider onboarding complete if profile is loaded AND onboarding_completed is true
   const isOnboardingComplete = !profileLoading && (profile?.onboarding_completed ?? false);
+  
+  // Check if user is on free tier
+  const isFreeTier = !profileLoading && (profile?.is_free_tier ?? false);
 
   return (
     <AuthContext.Provider
@@ -157,6 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         refreshProfile,
         isOnboardingComplete,
+        isFreeTier,
       }}
     >
       {children}

@@ -33,7 +33,7 @@ const tierBadgeColors: Record<string, string> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, profile, signOut, isOnboardingComplete, loading, profileLoading } = useAuth();
+  const { user, profile, signOut, isOnboardingComplete, loading, profileLoading, isFreeTier } = useAuth();
   const {
     drills,
     submissions,
@@ -77,6 +77,33 @@ export default function Dashboard() {
       
       <main className="pt-20 pb-12">
         <div className="container mx-auto px-4">
+          {/* Free Tier Upgrade Banner */}
+          {isFreeTier && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-r from-secondary/10 via-primary/5 to-secondary/10 border border-secondary/20 rounded-xl p-4 mb-6"
+            >
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-secondary/20 rounded-lg">
+                    <Crown className="w-5 h-5 text-secondary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">You're on the Free Plan</p>
+                    <p className="text-sm text-muted-foreground">Upgrade to unlock full community access, coaching feedback, and exclusive content.</p>
+                  </div>
+                </div>
+                <Link to="/upgrade">
+                  <Button className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade Now
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          )}
           {/* Dashboard Header */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}

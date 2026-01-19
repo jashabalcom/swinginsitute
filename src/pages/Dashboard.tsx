@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   Video,
@@ -34,17 +35,32 @@ const tierBadgeColors: Record<string, string> = {
 };
 
 export default function Dashboard() {
-  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { user, profile, signOut, isOnboardingComplete, loading } = useAuth();
   
+  useEffect(() => {
+    if (!loading && !isOnboardingComplete) {
+      navigate("/onboarding");
+    }
+  }, [loading, isOnboardingComplete, navigate]);
+
   const completedTasks = weeklyTasks.filter(t => t.completed).length;
   const progressPercent = (completedTasks / weeklyTasks.length) * 100;
 
-  const memberName = profile?.full_name || user?.email?.split('@')[0] || "Member";
+  const memberName = profile?.player_name || profile?.full_name || user?.email?.split('@')[0] || "Member";
   const tier = profile?.membership_tier || "starter";
   const creditsRemaining = profile?.credits_remaining || 0;
   const lessonRate = profile?.lesson_rate || 145;
   const currentPhase = profile?.current_phase || "Phase 1: Foundation";
   const currentWeek = profile?.current_week || 1;
+
+  if (loading || !isOnboardingComplete) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -8,10 +8,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { CommunitySidebar } from "@/components/community/CommunitySidebar";
 import { PostComposer } from "@/components/community/PostComposer";
+import { ReadOnlyPostComposer } from "@/components/community/ReadOnlyPostComposer";
 import { PostFeed } from "@/components/community/PostFeed";
 import { MemberDirectory } from "@/components/community/MemberDirectory";
 import { ConversationList } from "@/components/community/ConversationList";
 import { DirectMessagePanel } from "@/components/community/DirectMessagePanel";
+import { UpgradePrompt } from "@/components/community/UpgradePrompt";
 import { cn } from "@/lib/utils";
 
 interface Channel {
@@ -32,7 +34,10 @@ type ViewMode = "feed" | "dm-list" | "dm-chat";
 
 export default function TrainingRoom() {
   const navigate = useNavigate();
-  const { user, isOnboardingComplete, loading } = useAuth();
+  const { user, profile, isOnboardingComplete, loading } = useAuth();
+  
+  // Check if user is on free tier
+  const isFreeTier = profile?.is_free_tier ?? false;
 
   const [channels, setChannels] = useState<Channel[]>([]);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
@@ -152,12 +157,25 @@ export default function TrainingRoom() {
             <div className="flex-1 overflow-y-auto p-4 lg:p-6">
               {viewMode === "feed" && activeChannel && (
                 <div className="max-w-2xl mx-auto space-y-4">
+                  {/* Upgrade banner for free tier */}
+                  {isFreeTier && (
+                    <UpgradePrompt 
+                      variant="banner"
+                      title="You're on the free tier"
+                      description="Upgrade to post, comment, and fully engage with the community."
+                    />
+                  )}
+                  
                   {/* Post Composer - Clean card design */}
                   <div className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-sm">
-                    <PostComposer
-                      channelId={activeChannel.id}
-                      onPostCreated={() => setRefreshFeed(r => r + 1)}
-                    />
+                    {isFreeTier ? (
+                      <ReadOnlyPostComposer />
+                    ) : (
+                      <PostComposer
+                        channelId={activeChannel.id}
+                        onPostCreated={() => setRefreshFeed(r => r + 1)}
+                      />
+                    )}
                   </div>
                   <PostFeed channelId={activeChannel.id} refreshTrigger={refreshFeed} />
                 </div>

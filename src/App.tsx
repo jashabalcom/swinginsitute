@@ -14,6 +14,7 @@ import Hybrid from "./pages/Hybrid";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import FreeSignup from "./pages/FreeSignup";
 import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";
 import TrainingRoom from "./pages/TrainingRoom";
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/complete-account" element={<CompleteAccount />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/free-signup" element={<FreeSignup />} />
             <Route
               path="/dashboard"
               element={

@@ -28,7 +28,7 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   profileLoading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, isFreeTier?: boolean) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -97,8 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, fullName: string, isFreeTier: boolean = false) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -108,6 +108,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       },
     });
+    
+    // If signup successful and is free tier, update the profile
+    if (!error && data.user && isFreeTier) {
+      // Wait a moment for the trigger to create the profile
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      await supabase
+        .from("profiles")
+        .update({ 
+          is_free_tier: true,
+          onboarding_completed: true // Skip onboarding for free tier
+        })
+        .eq("user_id", data.user.id);
+    }
+    
     return { error };
   };
 

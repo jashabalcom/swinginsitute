@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +26,7 @@ import { MemberDirectory } from "@/components/community/MemberDirectory";
 import { MessageReactions } from "@/components/community/MessageReactions";
 import { DirectMessagePanel } from "@/components/community/DirectMessagePanel";
 import { ConversationList } from "@/components/community/ConversationList";
+import { MentionInput, renderMessageWithMentions, extractMentions } from "@/components/community/MentionInput";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 interface Channel {
@@ -292,8 +292,8 @@ export default function TrainingRoom() {
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if ((!newMessage.trim() && !selectedImage) || !activeChannel || !user) return;
     
     setSending(true);
@@ -321,14 +321,55 @@ export default function TrainingRoom() {
         setUploadingImage(false);
       }
 
-      const { error } = await supabase.from("messages").insert({
+      const messageContent = newMessage.trim() || (imageUrl ? "" : "");
+
+      const { data: insertedMessage, error } = await supabase.from("messages").insert({
         channel_id: activeChannel.id,
         user_id: user.id,
-        content: newMessage.trim() || (imageUrl ? "" : ""),
+        content: messageContent,
         image_url: imageUrl,
-      });
+      }).select().single();
       
       if (error) throw error;
+
+      // Handle mentions
+      const mentionedNames = extractMentions(messageContent);
+      if (mentionedNames.length > 0 && insertedMessage) {
+        // Find users matching the mentioned names
+        const { data: mentionedProfiles } = await supabase
+          .from("profiles")
+          .select("user_id, player_name, full_name")
+          .or(mentionedNames.map(name => `player_name.ilike.${name},full_name.ilike.${name}`).join(","));
+
+        if (mentionedProfiles && mentionedProfiles.length > 0) {
+          // Create mention records and notifications
+          const mentionInserts = mentionedProfiles
+            .filter(p => p.user_id !== user.id)
+            .map(p => ({
+              message_id: insertedMessage.id,
+              mentioned_user_id: p.user_id,
+              mentioner_user_id: user.id,
+            }));
+
+          const notificationInserts = mentionedProfiles
+            .filter(p => p.user_id !== user.id)
+            .map(p => ({
+              user_id: p.user_id,
+              type: "mention",
+              title: `${profile?.player_name || profile?.full_name || "Someone"} mentioned you`,
+              content: messageContent.slice(0, 100),
+              link: "/training-room",
+            }));
+
+          if (mentionInserts.length > 0) {
+            await supabase.from("mentions").insert(mentionInserts);
+          }
+          if (notificationInserts.length > 0) {
+            await supabase.from("notifications").insert(notificationInserts);
+          }
+        }
+      }
+
       setNewMessage("");
       clearImageSelection();
     } catch (error) {
@@ -676,7 +717,7 @@ export default function TrainingRoom() {
                                               : "bg-muted text-foreground"
                                           }`}>
                                             <p className="text-sm whitespace-pre-wrap break-words">
-                                              {message.content}
+                                              {renderMessageWithMentions(message.content)}
                                             </p>
                                           </div>
                                         )}
@@ -738,10 +779,11 @@ export default function TrainingRoom() {
                       >
                         <ImagePlus className="w-5 h-5 text-muted-foreground" />
                       </Button>
-                      <Input
+                      <MentionInput
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder={`Message #${activeChannel.slug}...`}
+                        onChange={setNewMessage}
+                        onSubmit={() => handleSendMessage()}
+                        placeholder={`Message #${activeChannel.slug}... (use @ to mention)`}
                         className="flex-1 bg-muted border-border focus:border-primary"
                         disabled={sending || uploadingImage}
                       />

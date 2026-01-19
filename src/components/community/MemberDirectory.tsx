@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Search, X } from "lucide-react";
+import { Users, Search, X, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface Member {
   user_id: string;
@@ -24,12 +27,15 @@ const tierBadgeColors: Record<string, string> = {
 interface MemberDirectoryProps {
   onClose?: () => void;
   className?: string;
+  onStartDM?: (conversationId: string, otherUser: { id: string; full_name: string | null; avatar_url: string | null }) => void;
 }
 
-export function MemberDirectory({ onClose, className = "" }: MemberDirectoryProps) {
+export function MemberDirectory({ onClose, className = "", onStartDM }: MemberDirectoryProps) {
+  const { user } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [startingDM, setStartingDM] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchMembers() {
@@ -68,6 +74,56 @@ export function MemberDirectory({ onClose, className = "" }: MemberDirectoryProp
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const handleStartDM = async (member: Member) => {
+    if (!user || !onStartDM || member.user_id === user.id) return;
+
+    setStartingDM(member.user_id);
+    try {
+      // Check if conversation already exists (in either order)
+      const { data: existingConv, error: searchError } = await supabase
+        .from("conversations")
+        .select("*")
+        .or(
+          `and(participant_1.eq.${user.id},participant_2.eq.${member.user_id}),and(participant_1.eq.${member.user_id},participant_2.eq.${user.id})`
+        )
+        .maybeSingle();
+
+      if (searchError) throw searchError;
+
+      if (existingConv) {
+        onStartDM(existingConv.id, {
+          id: member.user_id,
+          full_name: member.player_name || member.full_name,
+          avatar_url: member.avatar_url,
+        });
+        return;
+      }
+
+      // Create new conversation
+      const { data: newConv, error: createError } = await supabase
+        .from("conversations")
+        .insert({
+          participant_1: user.id,
+          participant_2: member.user_id,
+        })
+        .select()
+        .single();
+
+      if (createError) throw createError;
+
+      onStartDM(newConv.id, {
+        id: member.user_id,
+        full_name: member.player_name || member.full_name,
+        avatar_url: member.avatar_url,
+      });
+    } catch (error) {
+      console.error("Error starting DM:", error);
+      toast.error("Failed to start conversation");
+    } finally {
+      setStartingDM(null);
+    }
   };
 
   return (
@@ -125,11 +181,12 @@ export function MemberDirectory({ onClose, className = "" }: MemberDirectoryProp
             filteredMembers.map((member) => {
               const displayName = getDisplayName(member);
               const tier = member.membership_tier || "starter";
+              const isCurrentUser = member.user_id === user?.id;
 
               return (
                 <div
                   key={member.user_id}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
                 >
                   <Avatar className="w-8 h-8 border border-border">
                     <AvatarImage src={member.avatar_url || undefined} alt={displayName} />
@@ -140,6 +197,7 @@ export function MemberDirectory({ onClose, className = "" }: MemberDirectoryProp
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
                       {displayName}
+                      {isCurrentUser && <span className="text-muted-foreground ml-1">(you)</span>}
                     </p>
                     <span
                       className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${tierBadgeColors[tier]}`}
@@ -147,6 +205,21 @@ export function MemberDirectory({ onClose, className = "" }: MemberDirectoryProp
                       {tier}
                     </span>
                   </div>
+                  {onStartDM && !isCurrentUser && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleStartDM(member)}
+                      disabled={startingDM === member.user_id}
+                    >
+                      {startingDM === member.user_id ? (
+                        <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
                 </div>
               );
             })

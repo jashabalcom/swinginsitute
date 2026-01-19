@@ -21,7 +21,7 @@ const DAYS_OF_WEEK = [
   { value: 6, label: "Saturday" },
 ];
 
-const TIME_OPTIONS = Array.from({ length: 28 }, (_, i) => {
+const TIME_OPTIONS = Array.from({ length: 36 }, (_, i) => {
   const hour = Math.floor(i / 2) + 6; // Start at 6 AM
   const minute = (i % 2) * 30;
   const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;

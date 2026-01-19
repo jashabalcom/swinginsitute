@@ -4,6 +4,7 @@ import { Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 const navLinks = [
   { name: "Train in Atlanta", href: "/train-atlanta" },
@@ -24,10 +25,9 @@ export function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img 
-              src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+              src={swingInstituteLogo}
               alt="Swing Institute"
               className="h-10 md:h-14 w-auto object-contain"
-              loading="eager"
             />
           </Link>
 

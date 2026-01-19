@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -54,7 +55,7 @@ export default function Signup() {
             <div className="text-center mb-8">
               <Link to="/" className="inline-block mb-6">
                 <img 
-                  src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                  src={swingInstituteLogo}
                   alt="Swing Institute"
                   className="h-16 w-auto mx-auto object-contain"
                 />

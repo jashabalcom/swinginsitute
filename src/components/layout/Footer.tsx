@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 const footerLinks = {
   training: [
@@ -27,7 +28,7 @@ export function Footer() {
           <div className="lg:col-span-1">
             <Link to="/" className="inline-block">
               <img 
-                src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                src={swingInstituteLogo}
                 alt="Swing Institute"
                 className="h-12 w-auto object-contain"
               />

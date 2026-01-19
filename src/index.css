@@ -2,95 +2,102 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* The Swing Institute - Elite Baseball Training Platform
+   Premium dark design system with MLB-level credibility */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    /* Core Backgrounds */
+    --background: 210 40% 11%; /* #0B1C2D Midnight Navy */
+    --foreground: 0 0% 100%;
+    
+    /* Cards & Panels */
+    --card: 207 23% 16%; /* #1E2933 Charcoal */
+    --card-foreground: 0 0% 100%;
+    
+    --popover: 207 23% 16%;
+    --popover-foreground: 0 0% 100%;
+    
+    /* Primary - Performance Red */
+    --primary: 0 70% 47%; /* #C62828 */
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary - Steel Blue */
+    --secondary: 214 75% 43%; /* #1565C0 */
+    --secondary-foreground: 0 0% 100%;
+    
+    /* Muted */
+    --muted: 207 18% 22%; /* #2C3A47 */
+    --muted-foreground: 214 10% 67%; /* #9AA4AF */
+    
+    /* Accent - Training Green */
+    --accent: 125 47% 33%; /* #2E7D32 */
+    --accent-foreground: 0 0% 100%;
+    
+    /* Destructive */
+    --destructive: 0 70% 47%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Borders */
+    --border: 207 18% 22%; /* #2C3A47 */
+    --input: 207 18% 25%;
+    --ring: 0 70% 47%;
+    
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    
+    /* Elite Gold (subtle accent) */
+    --gold: 45 70% 47%; /* #C9A227 */
+    
+    /* Disabled */
+    --disabled: 207 14% 28%; /* #3A4652 */
+    
+    /* Text hierarchy */
+    --text-primary: 0 0% 100%;
+    --text-secondary: 214 15% 83%; /* #D1D5DB */
+    --text-muted: 214 10% 67%; /* #9AA4AF */
+    
+    /* Sidebar */
+    --sidebar-background: 210 40% 11%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 70% 47%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 207 23% 16%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 207 18% 22%;
+    --sidebar-ring: 0 70% 47%;
+  }
+  
+  /* No dark mode toggle - single premium dark theme */
+  .dark {
+    --background: 210 40% 11%;
+    --foreground: 0 0% 100%;
+    --card: 207 23% 16%;
+    --card-foreground: 0 0% 100%;
+    --popover: 207 23% 16%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 70% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 75% 43%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 207 18% 22%;
+    --muted-foreground: 214 10% 67%;
+    --accent: 125 47% 33%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 207 18% 22%;
+    --input: 207 18% 25%;
+    --ring: 0 70% 47%;
+    --sidebar-background: 210 40% 11%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 70% 47%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 207 23% 16%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 207 18% 22%;
+    --sidebar-ring: 0 70% 47%;
   }
 }
 
@@ -98,8 +105,139 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Oswald', 'Arial Narrow', sans-serif;
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Hero Button - Primary CTA */
+  .btn-hero {
+    @apply bg-primary text-primary-foreground font-semibold px-8 py-4 rounded-lg 
+           transition-all duration-300 hover:bg-primary/90 hover:scale-[1.02]
+           shadow-lg shadow-primary/20;
+  }
+  
+  /* Secondary Outline Button */
+  .btn-secondary-outline {
+    @apply bg-transparent border-2 border-secondary text-secondary font-semibold 
+           px-6 py-3 rounded-lg transition-all duration-300 
+           hover:bg-secondary hover:text-secondary-foreground;
+  }
+  
+  /* Card with accent line */
+  .card-accent-red {
+    @apply bg-card rounded-xl p-6 border-l-2 border-l-primary border border-border;
+  }
+  
+  .card-accent-blue {
+    @apply bg-card rounded-xl p-6 border-l-2 border-l-secondary border border-border;
+  }
+  
+  .card-accent-green {
+    @apply bg-card rounded-xl p-6 border-l-2 border-l-accent border border-border;
+  }
+  
+  /* Premium card styling */
+  .card-premium {
+    @apply bg-card rounded-xl border border-border/50 backdrop-blur-sm;
+  }
+  
+  /* Section headers */
+  .section-header {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold text-foreground uppercase tracking-tight;
+  }
+  
+  .section-subheader {
+    @apply text-lg md:text-xl text-muted-foreground max-w-2xl;
+  }
+  
+  /* Gradient text */
+  .gradient-text-red {
+    @apply bg-gradient-to-r from-primary to-red-400 bg-clip-text text-transparent;
+  }
+  
+  .gradient-text-blue {
+    @apply bg-gradient-to-r from-secondary to-blue-400 bg-clip-text text-transparent;
+  }
+  
+  /* Stats/numbers styling */
+  .stat-number {
+    font-family: 'Oswald', sans-serif;
+    @apply text-5xl md:text-6xl font-bold text-primary;
+  }
+  
+  /* Navigation link */
+  .nav-link {
+    @apply text-foreground/80 hover:text-foreground transition-colors duration-200 
+           font-medium tracking-wide uppercase text-sm;
+  }
+  
+  .nav-link-active {
+    @apply text-primary;
+  }
+  
+  /* Tier badges */
+  .tier-badge {
+    @apply px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider;
+  }
+  
+  .tier-starter {
+    @apply bg-muted text-muted-foreground;
+  }
+  
+  .tier-pro {
+    @apply bg-secondary/20 text-secondary;
+  }
+  
+  .tier-elite {
+    @apply bg-gradient-to-r from-amber-600/20 to-amber-500/20 text-amber-400;
+  }
+  
+  .tier-hybrid {
+    @apply bg-primary/20 text-primary;
+  }
+}
+
+@layer utilities {
+  /* Subtle glow effects */
+  .glow-red {
+    box-shadow: 0 0 40px -10px hsl(var(--primary) / 0.4);
+  }
+  
+  .glow-blue {
+    box-shadow: 0 0 40px -10px hsl(var(--secondary) / 0.4);
+  }
+  
+  /* Text shadows for headlines over images */
+  .text-shadow {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Fade animations */
+  .fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

@@ -1,0 +1,106 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+
+const navLinks = [
+  { name: "Train in Atlanta", href: "/train-atlanta" },
+  { name: "Train Online", href: "/train-online" },
+  { name: "Hybrid Training", href: "/hybrid" },
+  { name: "Free Masterclass", href: "/masterclass" },
+  { name: "About", href: "/about" },
+];
+
+export function Header() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16 md:h-20">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <div className="flex flex-col">
+              <span className="font-display text-xl md:text-2xl font-bold tracking-tight text-foreground">
+                SWING INSTITUTE
+              </span>
+              <span className="text-[10px] md:text-xs text-muted-foreground tracking-widest uppercase">
+                Elite Baseball Development
+              </span>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <Link key={link.name} to={link.href} className="nav-link">
+                {link.name}
+              </Link>
+            ))}
+          </nav>
+
+          {/* CTA Buttons */}
+          <div className="hidden lg:flex items-center space-x-4">
+            <Link to="/login">
+              <Button variant="ghost" className="text-foreground hover:text-primary">
+                Login
+              </Button>
+            </Link>
+            <Link to="/masterclass">
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                Start Free
+              </Button>
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden p-2 text-foreground"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden bg-card border-t border-border"
+          >
+            <nav className="container mx-auto px-4 py-6 flex flex-col space-y-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className="nav-link py-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <div className="pt-4 border-t border-border flex flex-col space-y-3">
+                <Link to="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/masterclass" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-primary hover:bg-primary/90">
+                    Start Free
+                  </Button>
+                </Link>
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+}

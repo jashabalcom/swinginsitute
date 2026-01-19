@@ -12,10 +12,8 @@ import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { TimeSlotPicker } from "@/components/booking/TimeSlotPicker";
 import { UserPackageCard } from "@/components/booking/UserPackageCard";
 import { STRIPE_PRICES } from "@/config/stripe";
+import { supabase } from "@/integrations/supabase/client";
 import type { TimeSlot } from "@/types/booking";
-
-// Placeholder coach ID - in production, fetch from database
-const DEFAULT_COACH_ID = "00000000-0000-0000-0000-000000000001";
 
 type BookingType = "lesson" | "mindset";
 
@@ -51,10 +49,28 @@ export default function Book() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"package" | "direct_pay">("direct_pay");
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const [coachId, setCoachId] = useState<string | undefined>(undefined);
 
   const isMember = profile?.membership_tier && profile.membership_tier !== "starter";
   const currentOption = BOOKING_OPTIONS[bookingType];
   const price = isMember ? currentOption.memberPrice : currentOption.basePrice;
+
+  // Fetch the coach ID from user_roles table
+  useEffect(() => {
+    const fetchCoach = async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .in("role", ["admin", "coach"])
+        .limit(1)
+        .maybeSingle();
+      
+      if (data?.user_id) {
+        setCoachId(data.user_id);
+      }
+    };
+    fetchCoach();
+  }, []);
 
   // Check for success param
   useEffect(() => {
@@ -69,11 +85,11 @@ export default function Book() {
       setLoadingSlots(true);
       setSelectedSlot(null);
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      getAvailability(dateStr, DEFAULT_COACH_ID)
+      getAvailability(dateStr, coachId)
         .then(setSlots)
         .finally(() => setLoadingSlots(false));
     }
-  }, [selectedDate, getAvailability]);
+  }, [selectedDate, coachId, getAvailability]);
 
   // Reset slot when booking type changes
   useEffect(() => {
@@ -89,11 +105,11 @@ export default function Book() {
       const startTime = new Date(`${format(selectedDate, "yyyy-MM-dd")}T${selectedSlot.startTime}:00`);
       const endTime = addMinutes(startTime, currentOption.duration);
 
-      if (paymentMethod === "package" && selectedPackageId) {
+      if (paymentMethod === "package" && selectedPackageId && coachId) {
         // Book using package credits
         const { error } = await createBooking({
           serviceTypeId: bookingType,
-          coachId: DEFAULT_COACH_ID,
+          coachId: coachId,
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
           paymentMethod: "package",

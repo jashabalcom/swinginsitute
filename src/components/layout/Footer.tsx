@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "@/assets/logo.jpg";
 
 const footerLinks = {
   training: [
@@ -25,8 +26,13 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link to="/" className="inline-block">
-              <span className="font-display text-2xl font-bold text-foreground">
+            <Link to="/" className="inline-flex items-center space-x-3">
+              <img 
+                src={logo} 
+                alt="Swing Institute" 
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <span className="font-display text-xl font-bold text-foreground">
                 SWING INSTITUTE
               </span>
             </Link>

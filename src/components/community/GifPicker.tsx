@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, forwardRef } from "react";
 import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,21 @@ interface Gif {
 
 interface GifPickerProps {
   onSelect: (gifUrl: string) => void;
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
 }
 
-// Using Giphy API (free tier) - in production, you'd want your own API key
-const GIPHY_API_KEY = "dc6zaTOxFJmzC"; // Public beta key for demo purposes
+// Use environment variable or fallback to public beta key
+const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY || "dc6zaTOxFJmzC";
+
+// Forward ref button for use with PopoverTrigger asChild
+const GifTriggerButton = forwardRef<HTMLButtonElement, React.ComponentPropsWithoutRef<typeof Button>>(
+  (props, ref) => (
+    <Button ref={ref} variant="ghost" size="sm" className="h-8 px-2 text-xs" {...props}>
+      GIF
+    </Button>
+  )
+);
+GifTriggerButton.displayName = "GifTriggerButton";
 
 export function GifPicker({ onSelect, trigger }: GifPickerProps) {
   const [open, setOpen] = useState(false);
@@ -103,7 +113,9 @@ export function GifPicker({ onSelect, trigger }: GifPickerProps) {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverTrigger asChild>
+        {trigger || <GifTriggerButton />}
+      </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
         <div className="p-3 border-b border-border">
           <div className="flex items-center gap-2">

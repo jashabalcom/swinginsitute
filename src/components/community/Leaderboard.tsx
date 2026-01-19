@@ -95,37 +95,35 @@ export function Leaderboard({ limit = 5, showHeader = true }: LeaderboardProps) 
     <div>
       {showHeader && (
         <div className="flex items-center gap-2 mb-3">
-          <Trophy className="w-4 h-4 text-yellow-400" />
-          <h3 className="font-semibold text-sm">Leaderboard</h3>
+          <Trophy className="w-4 h-4 text-yellow-500" />
+          <h3 className="font-semibold text-sm text-foreground">Leaderboard</h3>
         </div>
       )}
-      <ScrollArea className="h-[200px]">
-        <div className="space-y-2">
-          {leaders.map((entry, index) => (
-            <div
-              key={entry.user_id}
-              className="flex items-center gap-3 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-            >
-              <div className="w-5 flex justify-center">{getRankIcon(index)}</div>
-              <Avatar className="h-7 w-7">
-                <AvatarImage src={entry.profile?.avatar_url || undefined} />
-                <AvatarFallback className="text-xs bg-primary/20 text-primary">
-                  {(entry.profile?.player_name || entry.profile?.full_name || "?")[0].toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {entry.profile?.player_name || entry.profile?.full_name || "Anonymous"}
-                </p>
-              </div>
-              <LevelBadge level={entry.level} size="sm" />
-              <span className="text-xs text-muted-foreground font-mono">
-                {entry.total_points.toLocaleString()}
-              </span>
+      <div className="space-y-2">
+        {leaders.map((entry, index) => (
+          <div
+            key={entry.user_id}
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors"
+          >
+            <div className="w-5 flex justify-center">{getRankIcon(index)}</div>
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={entry.profile?.avatar_url || undefined} />
+              <AvatarFallback className="text-xs bg-primary/20 text-primary">
+                {(entry.profile?.player_name || entry.profile?.full_name || "?")[0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate text-foreground">
+                {entry.profile?.player_name || entry.profile?.full_name || "Anonymous"}
+              </p>
             </div>
-          ))}
-        </div>
-      </ScrollArea>
+            <LevelBadge level={entry.level} size="sm" />
+            <span className="text-xs text-muted-foreground font-mono tabular-nums">
+              {entry.total_points}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

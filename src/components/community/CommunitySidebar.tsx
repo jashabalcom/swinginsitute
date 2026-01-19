@@ -47,42 +47,23 @@ export function CommunitySidebar({
   const progress = getProgressToNextLevel(points);
 
   return (
-    <div className="flex flex-col h-full bg-card">
+    <div className="flex flex-col h-full bg-[hsl(var(--background))]">
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            navigate("/dashboard");
-            onClose?.();
-          }}
-          className="text-muted-foreground hover:text-foreground mb-3"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Button>
-        <Link to="/" className="inline-block mb-2" onClick={onClose}>
-          <img
-            src={swingInstituteLogo}
-            alt="Swing Institute"
-            className="h-8 w-auto object-contain"
-          />
-        </Link>
+      <div className="p-4">
         <h2 className="font-display text-lg font-bold text-foreground">Community</h2>
       </div>
 
       {/* User Profile Card */}
-      <div className="p-4 border-b border-border">
+      <div className="px-4 pb-4">
         <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-12 w-12">
+          <Avatar className="h-12 w-12 ring-2 ring-primary/20">
             <AvatarImage src={profile?.avatar_url || undefined} />
             <AvatarFallback className="bg-primary/20 text-primary font-semibold">
               {(profile?.player_name || profile?.full_name || "?")[0].toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold truncate">
+            <p className="font-semibold truncate text-foreground">
               {profile?.player_name || profile?.full_name || "Member"}
             </p>
             <div className="flex items-center gap-2">
@@ -95,37 +76,42 @@ export function CommunitySidebar({
         </div>
         
         {/* Level Progress */}
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>{points.toLocaleString()} pts</span>
             {level < 10 && <span>{progress.next.toLocaleString()} pts</span>}
           </div>
-          <Progress value={progress.percentage} className="h-1.5" />
+          <Progress value={progress.percentage} className="h-2 bg-muted/30" />
         </div>
       </div>
 
       {/* New Post Button */}
-      {onNewPost && (
-        <div className="p-3">
-          <Button onClick={onNewPost} className="w-full" size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            New Post
-          </Button>
-        </div>
-      )}
+      <div className="px-4 pb-4">
+        <Button 
+          onClick={() => {
+            onNewPost?.();
+            onClose?.();
+          }} 
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+          size="default"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          New Post
+        </Button>
+      </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
+      <ScrollArea className="flex-1 px-2">
+        <div className="space-y-1">
           {/* DMs Button */}
           <button
             onClick={() => {
               onDMClick();
               onClose?.();
             }}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
               viewMode === "dm-list" || viewMode === "dm-chat"
-                ? "bg-primary/10 text-primary"
+                ? "bg-muted text-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }`}
           >
@@ -133,12 +119,12 @@ export function CommunitySidebar({
             <span className="text-sm font-medium">Direct Messages</span>
           </button>
 
-          <Separator className="my-2" />
-
-          {/* Channels */}
-          <p className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {/* Channels Header */}
+          <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Channels
           </p>
+          
+          {/* Channels List */}
           {channels.map((channel) => (
             <button
               key={channel.id}
@@ -146,30 +132,30 @@ export function CommunitySidebar({
                 onChannelSelect(channel);
                 onClose?.();
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
                 activeChannel?.id === channel.id && viewMode === "feed"
-                  ? "bg-primary/10 text-primary"
+                  ? "bg-primary/10 text-primary font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               }`}
             >
               <Hash className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm font-medium truncate">{channel.name}</span>
+              <span className="text-sm truncate">{channel.name}</span>
             </button>
           ))}
         </div>
       </ScrollArea>
 
       {/* Leaderboard Widget */}
-      <div className="p-3 border-t border-border">
+      <div className="p-4 border-t border-border/50">
         <Leaderboard limit={3} />
       </div>
 
       {/* Settings */}
-      <div className="p-3 border-t border-border">
+      <div className="p-3 border-t border-border/50">
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start text-muted-foreground"
+          className="w-full justify-start text-muted-foreground hover:text-foreground"
           onClick={() => {
             navigate("/settings");
             onClose?.();

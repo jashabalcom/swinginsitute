@@ -221,7 +221,7 @@ export function PostCard({ post, onDelete }: PostCardProps) {
   };
 
   return (
-    <div className="bg-card rounded-xl border border-border p-4">
+    <div className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 p-4 shadow-sm hover:shadow-md transition-shadow">
       {/* Header */}
       <div className="flex items-start gap-3 mb-3">
         <Avatar className="h-10 w-10">

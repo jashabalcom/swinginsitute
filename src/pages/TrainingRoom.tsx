@@ -101,7 +101,7 @@ export default function TrainingRoom() {
 
       <div className="flex-1 flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-72 border-r border-border flex-shrink-0">
+        <aside className="hidden lg:flex lg:flex-col w-72 border-r border-border/50 flex-shrink-0 bg-card/50">
           <CommunitySidebar
             channels={channels}
             activeChannel={activeChannel}
@@ -151,11 +151,14 @@ export default function TrainingRoom() {
           <div className="flex-1 flex overflow-hidden pb-16 lg:pb-0">
             <div className="flex-1 overflow-y-auto p-4 lg:p-6">
               {viewMode === "feed" && activeChannel && (
-                <div className="max-w-2xl mx-auto space-y-6">
-                  <PostComposer
-                    channelId={activeChannel.id}
-                    onPostCreated={() => setRefreshFeed(r => r + 1)}
-                  />
+                <div className="max-w-2xl mx-auto space-y-4">
+                  {/* Post Composer - Clean card design */}
+                  <div className="bg-card/80 backdrop-blur-sm rounded-xl border border-border/50 shadow-sm">
+                    <PostComposer
+                      channelId={activeChannel.id}
+                      onPostCreated={() => setRefreshFeed(r => r + 1)}
+                    />
+                  </div>
                   <PostFeed channelId={activeChannel.id} refreshTrigger={refreshFeed} />
                 </div>
               )}

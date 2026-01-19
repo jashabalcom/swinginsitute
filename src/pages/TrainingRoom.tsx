@@ -99,7 +99,7 @@ export default function TrainingRoom() {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      <div className="flex-1 flex">
+      <div className="flex-1 flex pt-16 md:pt-20">
         {/* Desktop Sidebar */}
         <aside className="hidden lg:flex lg:flex-col w-72 border-r border-border/50 flex-shrink-0 bg-card/50">
           <CommunitySidebar
@@ -148,7 +148,7 @@ export default function TrainingRoom() {
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 flex overflow-hidden pb-16 lg:pb-0">
+          <div className="flex-1 flex overflow-hidden pb-20 lg:pb-0">
             <div className="flex-1 overflow-y-auto p-4 lg:p-6">
               {viewMode === "feed" && activeChannel && (
                 <div className="max-w-2xl mx-auto space-y-4">
@@ -196,8 +196,8 @@ export default function TrainingRoom() {
         </Sheet>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border">
-          <div className="flex items-center justify-around h-16 px-2">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border pb-safe">
+          <div className="flex items-center justify-around h-16 px-4">
             <button
               onClick={() => { setViewMode("feed"); if (channels[0]) setActiveChannel(channels[0]); }}
               className={cn(

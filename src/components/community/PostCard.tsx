@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { Link } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -8,6 +9,8 @@ import {
   Trash2,
   Send,
   Loader2,
+  Lock,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +21,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -64,9 +72,11 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onDelete }: PostCardProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const { awardPoints } = useGamification();
+  
+  const isFreeTier = profile?.is_free_tier ?? false;
   
   const [liked, setLiked] = useState(post.user_liked);
   const [likesCount, setLikesCount] = useState(post.likes_count);
@@ -298,15 +308,35 @@ export function PostCard({ post, onDelete }: PostCardProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-4 pt-3 border-t border-border">
-        <button
-          onClick={handleLike}
-          className={`flex items-center gap-1.5 text-sm transition-colors ${
-            liked ? "text-primary" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Heart className={`w-4 h-4 ${liked ? "fill-primary" : ""}`} />
-          <span>{likesCount}</span>
-        </button>
+        {isFreeTier ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-not-allowed"
+              >
+                <Heart className="w-4 h-4" />
+                <span>{likesCount}</span>
+                <Lock className="w-3 h-3 ml-1" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-xs">
+              <p className="text-sm">Upgrade to like posts</p>
+              <Link to="/checkout" className="text-primary text-xs flex items-center gap-1 mt-1">
+                Upgrade now <ArrowRight className="w-3 h-3" />
+              </Link>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <button
+            onClick={handleLike}
+            className={`flex items-center gap-1.5 text-sm transition-colors ${
+              liked ? "text-primary" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${liked ? "fill-primary" : ""}`} />
+            <span>{likesCount}</span>
+          </button>
+        )}
 
         <button
           onClick={() => setShowComments(!showComments)}
@@ -353,31 +383,44 @@ export function PostCard({ post, onDelete }: PostCardProps) {
               ))}
 
               {/* Comment Input */}
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Write a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleComment();
-                    }
-                  }}
-                  disabled={postingComment}
-                />
-                <Button
-                  size="icon"
-                  onClick={handleComment}
-                  disabled={!newComment.trim() || postingComment}
-                >
-                  {postingComment ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
+              {isFreeTier ? (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-dashed border-border">
+                  <Lock className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-sm text-muted-foreground flex-1">Upgrade to comment</span>
+                  <Link to="/checkout">
+                    <Button size="sm" variant="outline" className="shrink-0">
+                      Upgrade
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Write a comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleComment();
+                      }
+                    }}
+                    disabled={postingComment}
+                  />
+                  <Button
+                    size="icon"
+                    onClick={handleComment}
+                    disabled={!newComment.trim() || postingComment}
+                  >
+                    {postingComment ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>

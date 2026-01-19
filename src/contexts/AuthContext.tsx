@@ -25,6 +25,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  profileLoading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -39,8 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
+    setProfileLoading(true);
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
@@ -50,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!error && data) {
       setProfile(data as Profile);
     }
+    setProfileLoading(false);
   };
 
   const refreshProfile = async () => {
@@ -117,7 +121,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
-  const isOnboardingComplete = profile?.onboarding_completed ?? false;
+  // Only consider onboarding complete if profile is loaded AND onboarding_completed is true
+  const isOnboardingComplete = !profileLoading && (profile?.onboarding_completed ?? false);
 
   return (
     <AuthContext.Provider
@@ -126,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         profile,
         loading,
+        profileLoading,
         signUp,
         signIn,
         signOut,

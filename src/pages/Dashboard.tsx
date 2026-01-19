@@ -49,11 +49,14 @@ export default function Dashboard() {
     WEEKS_PER_PHASE,
   } = useProgressTracking();
 
+  const { profileLoading } = useAuth();
+
   useEffect(() => {
-    if (!loading && !isOnboardingComplete) {
+    // Only redirect to onboarding after profile is fully loaded and confirmed incomplete
+    if (!loading && !profileLoading && profile !== null && !profile.onboarding_completed) {
       navigate("/onboarding");
     }
-  }, [loading, isOnboardingComplete, navigate]);
+  }, [loading, profileLoading, profile, navigate]);
 
   // Check if user is admin
   useEffect(() => {

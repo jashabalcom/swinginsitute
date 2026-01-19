@@ -8,11 +8,12 @@ interface AdminRouteProps {
 }
 
 export function AdminRoute({ children }: AdminRouteProps) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, profileLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminSchedule();
   const location = useLocation();
 
-  if (authLoading || adminLoading) {
+  // Wait for all loading states including profile
+  if (authLoading || adminLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -24,6 +25,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Admins can access admin pages directly - no onboarding check
   if (!isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }

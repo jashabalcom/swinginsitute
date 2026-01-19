@@ -30,7 +30,7 @@ const tierBadgeColors: Record<string, string> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, profile, signOut, isOnboardingComplete, loading } = useAuth();
+  const { user, profile, signOut, isOnboardingComplete, loading, profileLoading } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const {
     drills,
@@ -48,8 +48,6 @@ export default function Dashboard() {
     PHASES,
     WEEKS_PER_PHASE,
   } = useProgressTracking();
-
-  const { profileLoading } = useAuth();
 
   useEffect(() => {
     // Only redirect to onboarding after profile is fully loaded and confirmed incomplete

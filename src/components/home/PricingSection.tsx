@@ -1,0 +1,185 @@
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Check, ArrowRight, MapPin, Globe, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const tiers = [
+  {
+    id: "atlanta",
+    name: "Train in Atlanta",
+    icon: MapPin,
+    subtitle: "In-Person Excellence",
+    price: "$145",
+    unit: "per session",
+    description: "Private 1-on-1 sessions at our Atlanta facility with Coach Jasha.",
+    features: [
+      "In-person swing analysis",
+      "Hands-on mechanical corrections",
+      "Real-time feedback",
+      "Access to training facility",
+      "Video recordings of sessions",
+    ],
+    cta: "Book Your Session",
+    href: "/train-atlanta",
+    popular: false,
+    accent: "blue",
+  },
+  {
+    id: "hybrid",
+    name: "Hybrid Training",
+    icon: Zap,
+    subtitle: "Best Value",
+    price: "From $279",
+    unit: "per month",
+    description: "Online membership + in-person credits. The complete package.",
+    features: [
+      "Everything in online membership",
+      "Monthly in-person credits",
+      "Priority booking access",
+      "Discounted session rate ($115/hr)",
+      "Quarterly progress assessments",
+    ],
+    cta: "Get Started",
+    href: "/hybrid",
+    popular: true,
+    accent: "red",
+  },
+  {
+    id: "online",
+    name: "Train Online",
+    icon: Globe,
+    subtitle: "From Anywhere",
+    price: "From $99",
+    unit: "per month",
+    description: "Full access to the Swing Institute system from anywhere in the world.",
+    features: [
+      "Phase-based training curriculum",
+      "Swing review submissions",
+      "Training Room community",
+      "Weekly action plans",
+      "Inner Diamond mindset training",
+    ],
+    cta: "Join Now",
+    href: "/train-online",
+    popular: false,
+    accent: "blue",
+  },
+];
+
+export function PricingSection() {
+  return (
+    <section className="py-20 md:py-28 bg-card/30">
+      <div className="container mx-auto px-4">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            BUILD A PRO-GRADE HITTER.{" "}
+            <span className="gradient-text-red">YOUR WAY.</span>
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Choose the path that fits your player's schedule, location, and goals.
+            Every path leads to the same elite system.
+          </p>
+        </motion.div>
+
+        {/* Pricing Cards */}
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+          {tiers.map((tier, index) => (
+            <motion.div
+              key={tier.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className={`relative flex flex-col rounded-2xl border p-6 lg:p-8 ${
+                tier.popular
+                  ? "border-primary bg-card glow-red"
+                  : "border-border bg-card/50"
+              }`}
+            >
+              {/* Popular Badge */}
+              {tier.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider px-4 py-1 rounded-full">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+
+              {/* Header */}
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <tier.icon className={`w-6 h-6 ${tier.popular ? 'text-primary' : 'text-secondary'}`} />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {tier.subtitle}
+                  </span>
+                </div>
+                <h3 className="font-display text-2xl font-bold text-foreground">
+                  {tier.name}
+                </h3>
+              </div>
+
+              {/* Price */}
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display text-4xl font-bold text-foreground">
+                    {tier.price}
+                  </span>
+                  <span className="text-muted-foreground text-sm">{tier.unit}</span>
+                </div>
+                <p className="text-muted-foreground text-sm mt-2">{tier.description}</p>
+              </div>
+
+              {/* Features */}
+              <ul className="space-y-3 mb-8 flex-grow">
+                {tier.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tier.popular ? 'text-primary' : 'text-accent'}`} />
+                    <span className="text-foreground/80 text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA */}
+              <Link to={tier.href} className="mt-auto">
+                <Button
+                  className={`w-full group ${
+                    tier.popular
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                      : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
+                  }`}
+                >
+                  {tier.cta}
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Bottom CTA */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="text-center mt-12"
+        >
+          <p className="text-muted-foreground mb-4">
+            Not sure which is right for you?
+          </p>
+          <Link to="/masterclass">
+            <Button variant="link" className="text-primary hover:text-primary/80 font-semibold">
+              Start with our Free Masterclass →
+            </Button>
+          </Link>
+        </motion.div>
+      </div>
+    </section>
+  );
+}

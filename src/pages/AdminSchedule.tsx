@@ -7,8 +7,10 @@ import {
   Users, 
   ArrowLeft,
   LayoutDashboard,
-  Settings
+  Settings,
+  DollarSign
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
@@ -87,6 +89,12 @@ export default function AdminSchedule() {
                 Manage availability, block times, and view all bookings
               </p>
             </div>
+            <Link to="/admin/services">
+              <Button variant="outline">
+                <DollarSign className="mr-2 h-4 w-4" />
+                Manage Services
+              </Button>
+            </Link>
           </motion.div>
 
           {/* Stats Cards */}

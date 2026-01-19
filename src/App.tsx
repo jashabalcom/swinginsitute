@@ -24,6 +24,7 @@ import AdminSchedule from "./pages/AdminSchedule";
 import AdminServiceTypes from "./pages/AdminServiceTypes";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminMembers from "./pages/AdminMembers";
+import AdminPackages from "./pages/AdminPackages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -121,6 +122,14 @@ const App = () => (
               element={
                 <AdminRoute>
                   <AdminMembers />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/packages"
+              element={
+                <AdminRoute>
+                  <AdminPackages />
                 </AdminRoute>
               }
             />

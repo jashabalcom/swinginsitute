@@ -22,15 +22,13 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="flex flex-col">
-              <span className="font-display text-xl md:text-2xl font-bold tracking-tight text-foreground">
-                SWING INSTITUTE
-              </span>
-              <span className="text-[10px] md:text-xs text-muted-foreground tracking-widest uppercase">
-                Elite Baseball Development
-              </span>
-            </div>
+          <Link to="/" className="flex items-center">
+            <img 
+              src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+              alt="Swing Institute"
+              className="h-10 md:h-14 w-auto object-contain"
+              loading="eager"
+            />
           </Link>
 
           {/* Desktop Navigation */}

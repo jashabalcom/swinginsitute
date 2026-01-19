@@ -26,9 +26,11 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link to="/" className="inline-block">
-              <span className="font-display text-2xl font-bold text-foreground">
-                SWING INSTITUTE
-              </span>
+              <img 
+                src="https://assets.cdn.filesafe.space/zwZcjJjCjMcDGRS6V7qs/media/683fafe628def090f992833c.png"
+                alt="Swing Institute"
+                className="h-12 w-auto object-contain"
+              />
             </Link>
             <p className="mt-4 text-muted-foreground text-sm leading-relaxed">
               Elite baseball development. Build a championship swing and unshakeable confidence.

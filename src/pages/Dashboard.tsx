@@ -20,7 +20,7 @@ import { PhaseProgressCard } from "@/components/dashboard/PhaseProgressCard";
 import { WeeklyDrillsCard } from "@/components/dashboard/WeeklyDrillsCard";
 import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
 import { CoachFeedbackCard } from "@/components/dashboard/CoachFeedbackCard";
-import swingInstituteLogo from "@/assets/swing-institute-logo.png";
+
 
 const tierBadgeColors: Record<string, string> = {
   starter: "tier-starter",
@@ -83,13 +83,6 @@ export default function Dashboard() {
           >
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <Link to="/">
-                  <img 
-                    src={swingInstituteLogo}
-                    alt="Swing Institute"
-                    className="h-12 w-auto object-contain"
-                  />
-                </Link>
                 <Link to="/settings" className="flex-shrink-0">
                   <Avatar className="w-12 h-12 border-2 border-border hover:border-primary transition-colors cursor-pointer">
                     <AvatarImage src={profile?.avatar_url || undefined} alt={memberName} />

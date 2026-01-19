@@ -3,11 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
-  Video,
   Calendar,
-  TrendingUp,
-  CheckCircle2,
-  Circle,
   MessageSquare,
   Crown,
   CreditCard,
@@ -16,16 +12,11 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
-
-const weeklyTasks = [
-  { id: 1, title: "Submit swing video for review", completed: false, priority: true },
-  { id: 2, title: "Complete Drill A: Load Sequence", completed: true },
-  { id: 3, title: "Complete Drill B: Hip Rotation", completed: false },
-  { id: 4, title: "Watch coaching video: The Power Position", completed: true },
-  { id: 5, title: "Optional: Mindset rep - Visualization", completed: false },
-];
+import { useProgressTracking } from "@/hooks/useProgressTracking";
+import { PhaseProgressCard } from "@/components/dashboard/PhaseProgressCard";
+import { WeeklyDrillsCard } from "@/components/dashboard/WeeklyDrillsCard";
+import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
 
 const tierBadgeColors: Record<string, string> = {
   starter: "tier-starter",
@@ -37,24 +28,35 @@ const tierBadgeColors: Record<string, string> = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, profile, signOut, isOnboardingComplete, loading } = useAuth();
-  
+  const {
+    drills,
+    submissions,
+    phaseProgress,
+    loading: progressLoading,
+    currentPhase,
+    currentWeek,
+    isDrillCompleted,
+    toggleDrillCompletion,
+    getWeeklyProgress,
+    canAdvance,
+    advanceProgress,
+    submitVideo,
+    PHASES,
+    WEEKS_PER_PHASE,
+  } = useProgressTracking();
+
   useEffect(() => {
     if (!loading && !isOnboardingComplete) {
       navigate("/onboarding");
     }
   }, [loading, isOnboardingComplete, navigate]);
 
-  const completedTasks = weeklyTasks.filter(t => t.completed).length;
-  const progressPercent = (completedTasks / weeklyTasks.length) * 100;
-
   const memberName = profile?.player_name || profile?.full_name || user?.email?.split('@')[0] || "Member";
   const tier = profile?.membership_tier || "starter";
   const creditsRemaining = profile?.credits_remaining || 0;
   const lessonRate = profile?.lesson_rate || 145;
-  const currentPhase = profile?.current_phase || "Phase 1: Foundation";
-  const currentWeek = profile?.current_week || 1;
 
-  if (loading || !isOnboardingComplete) {
+  if (loading || progressLoading || !isOnboardingComplete) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
@@ -98,10 +100,12 @@ export default function Dashboard() {
               </div>
               
               <div className="flex flex-wrap gap-3">
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Video className="w-4 h-4 mr-2" />
-                  Submit Swing
-                </Button>
+                <Link to="/training-room">
+                  <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Training Room
+                  </Button>
+                </Link>
                 <Link to="/train-atlanta">
                   <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
                     <Calendar className="w-4 h-4 mr-2" />
@@ -119,115 +123,32 @@ export default function Dashboard() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Current Training Focus */}
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="card-accent-red p-6"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">
-                      Current Training Focus
-                    </p>
-                    <h2 className="font-display text-2xl font-bold text-foreground">
-                      {currentPhase}
-                    </h2>
-                    <p className="text-muted-foreground">Week {currentWeek} of 3</p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-primary" />
-                </div>
-                <div className="bg-background/50 rounded-lg p-4 border border-border/50">
-                  <p className="text-foreground font-medium">
-                    This is your <span className="text-primary">ONLY</span> focus right now.
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Master this phase before moving to the next. Trust the process.
-                  </p>
-                </div>
-              </motion.section>
+              {/* Phase Progress */}
+              <PhaseProgressCard
+                currentPhase={currentPhase}
+                currentWeek={currentWeek}
+                phaseProgress={phaseProgress}
+                phases={PHASES}
+                weeksPerPhase={WEEKS_PER_PHASE}
+              />
 
-              {/* Weekly Action Plan */}
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="card-premium p-6"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-display text-xl font-bold text-foreground">
-                    This Week's Action Plan
-                  </h2>
-                  <span className="text-sm text-muted-foreground">
-                    {completedTasks}/{weeklyTasks.length} completed
-                  </span>
-                </div>
+              {/* Weekly Drills */}
+              <WeeklyDrillsCard
+                drills={drills}
+                isDrillCompleted={isDrillCompleted}
+                onToggleDrill={toggleDrillCompletion}
+                progressPercent={getWeeklyProgress()}
+                canAdvance={canAdvance()}
+                onAdvance={advanceProgress}
+                currentWeek={currentWeek}
+                weeksPerPhase={WEEKS_PER_PHASE}
+              />
 
-                <Progress 
-                  value={progressPercent} 
-                  className="h-2 mb-6" 
-                />
-
-                <ul className="space-y-3">
-                  {weeklyTasks.map((task) => (
-                    <li 
-                      key={task.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border ${
-                        task.completed 
-                          ? 'bg-accent/10 border-accent/20' 
-                          : task.priority 
-                            ? 'bg-primary/5 border-primary/20'
-                            : 'bg-card border-border/50'
-                      }`}
-                    >
-                      {task.completed ? (
-                        <CheckCircle2 className="w-5 h-5 text-accent flex-shrink-0" />
-                      ) : (
-                        <Circle className={`w-5 h-5 flex-shrink-0 ${task.priority ? 'text-primary' : 'text-muted-foreground'}`} />
-                      )}
-                      <span className={`${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                        {task.title}
-                      </span>
-                      {task.priority && !task.completed && (
-                        <span className="ml-auto text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-                          Priority
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </motion.section>
-
-              {/* Coach Feedback Status */}
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="card-accent-blue p-6"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                      Coach Feedback Status
-                    </h2>
-                    <div className="space-y-2 text-sm">
-                      <p className="text-muted-foreground">
-                        <span className="text-foreground font-medium">Last Review:</span> January 15, 2026
-                      </p>
-                      <p className="text-muted-foreground">
-                        <span className="text-foreground font-medium">Next Review Window:</span> January 20-22
-                      </p>
-                    </div>
-                    <div className="mt-4 p-3 bg-background/50 rounded-lg border border-border/50">
-                      <p className="text-sm text-foreground">
-                        <span className="text-secondary font-medium">Focus Note:</span> "Work on keeping your back elbow slot consistent through the load. Great progress on hip rotation."
-                      </p>
-                    </div>
-                  </div>
-                  <MessageSquare className="w-8 h-8 text-secondary" />
-                </div>
-              </motion.section>
+              {/* Video Submissions */}
+              <VideoSubmissionCard
+                submissions={submissions}
+                onSubmit={submitVideo}
+              />
             </div>
 
             {/* Sidebar */}

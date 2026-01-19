@@ -296,16 +296,24 @@ export default function Dashboard() {
                 <ul className="space-y-2">
                   {["Announcements", "Weekly Focus", "Player Wins", "Q&A with Coach", "Parents Room"].map((channel) => (
                     <li key={channel}>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-card"
-                      >
-                        <span className="w-2 h-2 rounded-full bg-secondary mr-3" />
-                        {channel}
-                      </Button>
+                      <Link to="/training-room">
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-card"
+                        >
+                          <span className="w-2 h-2 rounded-full bg-secondary mr-3" />
+                          {channel}
+                        </Button>
+                      </Link>
                     </li>
                   ))}
                 </ul>
+                <Link to="/training-room" className="block mt-4">
+                  <Button className="w-full bg-secondary hover:bg-secondary/90">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Enter Training Room
+                  </Button>
+                </Link>
               </motion.section>
             </div>
           </div>

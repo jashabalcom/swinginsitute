@@ -197,7 +197,7 @@ export default function Hybrid() {
                     ))}
                   </ul>
 
-                  <Link to={`/signup?plan=${tier.name.toLowerCase().replace(' ', '-')}`} className="w-full mt-auto block">
+                  <Link to={`/checkout?tier=${tier.name.toLowerCase().replace(' ', '-')}`} className="w-full mt-auto block">
                     <Button
                       className={`w-full ${
                         tier.popular

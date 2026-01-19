@@ -109,7 +109,7 @@ export default function TrainOnline() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/signup?tier=pro">
+                <Link to="/checkout?tier=pro">
                   <Button className="btn-hero group">
                     Join Now
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -222,7 +222,7 @@ export default function TrainOnline() {
                     ))}
                   </ul>
 
-                  <Link to={`/signup?tier=${tier.name.toLowerCase()}`} className="w-full mt-auto block">
+                  <Link to={`/checkout?tier=${tier.name.toLowerCase()}`} className="w-full mt-auto block">
                     <Button
                       className={`w-full ${
                         tier.popular

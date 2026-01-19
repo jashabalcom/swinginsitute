@@ -21,6 +21,7 @@ import Book from "./pages/Book";
 import Packages from "./pages/Packages";
 import MyBookings from "./pages/MyBookings";
 import AdminSchedule from "./pages/AdminSchedule";
+import AdminServiceTypes from "./pages/AdminServiceTypes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -94,6 +95,14 @@ const App = () => (
               element={
                 <AdminRoute>
                   <AdminSchedule />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/services"
+              element={
+                <AdminRoute>
+                  <AdminServiceTypes />
                 </AdminRoute>
               }
             />

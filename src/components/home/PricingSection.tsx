@@ -178,6 +178,17 @@ export function PricingSection() {
               Start with our Free Masterclass →
             </Button>
           </Link>
+          
+          <div className="mt-8 pt-8 border-t border-border/50">
+            <p className="text-muted-foreground mb-4">
+              Want to explore the community first?
+            </p>
+            <Link to="/signup?tier=free">
+              <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
+                Join the Community Free →
+              </Button>
+            </Link>
+          </div>
         </motion.div>
       </div>
     </section>

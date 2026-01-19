@@ -18,6 +18,7 @@ interface Profile {
   current_phase: string;
   current_week: number;
   avatar_url: string | null;
+  is_free_tier: boolean;
   created_at: string;
 }
 

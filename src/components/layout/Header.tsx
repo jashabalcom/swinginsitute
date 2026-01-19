@@ -8,10 +8,9 @@ import { NotificationBell } from "@/components/community/NotificationBell";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 const navLinks = [
-  { name: "Academy", href: "/academy" },
-  { name: "Events", href: "/events" },
   { name: "Train Online", href: "/train-online" },
-  { name: "Hybrid Training", href: "/hybrid" },
+  { name: "Train in Atlanta", href: "/train-atlanta" },
+  { name: "Hybrid", href: "/hybrid" },
   { name: "About", href: "/about" },
 ];
 

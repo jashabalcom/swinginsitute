@@ -21,6 +21,7 @@ import { WeeklyDrillsCard } from "@/components/dashboard/WeeklyDrillsCard";
 import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
 import { CoachFeedbackCard } from "@/components/dashboard/CoachFeedbackCard";
 import { NotificationBell } from "@/components/community/NotificationBell";
+import { MemberNavigation } from "@/components/dashboard/MemberNavigation";
 
 
 const tierBadgeColors: Record<string, string> = {
@@ -71,7 +72,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 lg:pb-0">
       <Header />
       
       <main className="pt-20 pb-12">
@@ -143,6 +144,9 @@ export default function Dashboard() {
               </div>
             </div>
           </motion.div>
+
+          {/* Member Navigation */}
+          <MemberNavigation />
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}

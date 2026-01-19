@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
@@ -6,10 +6,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Smile } from "lucide-react";
 
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
 }
 
 const EMOJI_CATEGORIES = {
@@ -20,6 +21,16 @@ const EMOJI_CATEGORIES = {
   "Hearts": ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝"],
   "Objects": ["📸", "📷", "🎥", "📹", "🎬", "📺", "📱", "💻", "⌨️", "🖥️", "🖨️", "🎮", "🕹️", "🎧", "🎤", "🎵", "🎶", "🎼", "📚", "📖", "✏️", "📝"],
 };
+
+// Forward ref button for use with PopoverTrigger asChild
+const EmojiTriggerButton = forwardRef<HTMLButtonElement, React.ComponentPropsWithoutRef<typeof Button>>(
+  (props, ref) => (
+    <Button ref={ref} variant="ghost" size="icon" className="h-8 w-8" {...props}>
+      <Smile className="w-4 h-4" />
+    </Button>
+  )
+);
+EmojiTriggerButton.displayName = "EmojiTriggerButton";
 
 export function EmojiPicker({ onSelect, trigger }: EmojiPickerProps) {
   const [open, setOpen] = useState(false);
@@ -32,7 +43,9 @@ export function EmojiPicker({ onSelect, trigger }: EmojiPickerProps) {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverTrigger asChild>
+        {trigger || <EmojiTriggerButton />}
+      </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
         {/* Category Tabs */}
         <div className="flex border-b border-border overflow-x-auto">

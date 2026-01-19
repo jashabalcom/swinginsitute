@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { format, startOfWeek, addDays, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight, User, Clock } from "lucide-react";
+import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfDay, addWeeks, subWeeks, subMonths, addMonths } from "date-fns";
+import { ChevronLeft, ChevronRight, User, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import type { Booking } from "@/types/booking";
 
@@ -19,6 +20,14 @@ const statusColors: Record<Booking["status"], string> = {
   no_show: "bg-gray-500/10 text-gray-600 border-gray-500/20",
 };
 
+const statusDotColors: Record<Booking["status"], string> = {
+  pending: "bg-yellow-500",
+  confirmed: "bg-green-500",
+  completed: "bg-blue-500",
+  cancelled: "bg-red-500",
+  no_show: "bg-gray-500",
+};
+
 export function AdminBookingsCalendar({
   bookings,
   onUpdateStatus,
@@ -26,93 +35,275 @@ export function AdminBookingsCalendar({
   const [currentWeekStart, setCurrentWeekStart] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 0 })
   );
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [viewMode, setViewMode] = useState<"week" | "month">("week");
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
+  const today = startOfDay(new Date());
   const days = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
 
   const getBookingsForDay = (date: Date) =>
     bookings.filter((b) => isSameDay(new Date(b.start_time), date));
 
-  const goToPreviousWeek = () => setCurrentWeekStart(addDays(currentWeekStart, -7));
-  const goToNextWeek = () => setCurrentWeekStart(addDays(currentWeekStart, 7));
-  const goToToday = () => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
+  const goToPreviousWeek = () => setCurrentWeekStart(subWeeks(currentWeekStart, 1));
+  const goToNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
+  const goToPreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const goToToday = () => {
+    setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
+    setCurrentMonth(new Date());
+    setSelectedDay(null);
+  };
+
+  const getMonthDays = () => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    
+    const startDayOfWeek = getDay(monthStart);
+    const paddingDays = Array.from({ length: startDayOfWeek }, (_, i) => 
+      addDays(monthStart, -(startDayOfWeek - i))
+    );
+    
+    const endDayOfWeek = getDay(monthEnd);
+    const endPaddingDays = Array.from({ length: 6 - endDayOfWeek }, (_, i) => 
+      addDays(monthEnd, i + 1)
+    );
+    
+    return [...paddingDays, ...allDays, ...endPaddingDays];
+  };
+
+  const monthDays = getMonthDays();
+
+  const renderDayBookings = () => {
+    if (!selectedDay) return null;
+    const dayBookings = getBookingsForDay(selectedDay);
+
+    return (
+      <div className="mt-4 p-4 bg-muted/50 rounded-xl border border-border">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-semibold text-foreground">
+            {format(selectedDay, "EEEE, MMMM d, yyyy")}
+          </h4>
+          <Button variant="ghost" size="icon" onClick={() => setSelectedDay(null)} className="h-8 w-8">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        {dayBookings.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No bookings for this day</p>
+        ) : (
+          <div className="space-y-2">
+            {dayBookings.map((booking) => (
+              <button
+                key={booking.id}
+                onClick={() => setSelectedBooking(booking)}
+                className={cn(
+                  "w-full text-left p-3 rounded-lg border text-sm transition-colors",
+                  "hover:ring-2 hover:ring-primary/20",
+                  statusColors[booking.status]
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">
+                    {format(new Date(booking.start_time), "h:mm a")} - {format(new Date(booking.end_time), "h:mm a")}
+                  </span>
+                  <Badge variant="outline" className={statusColors[booking.status]}>
+                    {booking.status}
+                  </Badge>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="font-display text-lg font-semibold text-foreground">
-          {format(currentWeekStart, "MMMM yyyy")}
-        </h3>
+      {/* Header with View Toggle */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <ToggleGroup
+          type="single"
+          value={viewMode}
+          onValueChange={(value) => {
+            if (value) {
+              setViewMode(value as "week" | "month");
+              setSelectedDay(null);
+            }
+          }}
+          className="bg-muted rounded-lg p-1"
+        >
+          <ToggleGroupItem
+            value="week"
+            className="text-xs px-3 py-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >
+            Week
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="month"
+            className="text-xs px-3 py-1.5 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >
+            Month
+          </ToggleGroupItem>
+        </ToggleGroup>
+        
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={goToToday}>
             Today
           </Button>
-          <Button variant="outline" size="icon" onClick={goToPreviousWeek} className="h-8 w-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={viewMode === "week" ? goToPreviousWeek : goToPreviousMonth}
+            className="h-8 w-8"
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={goToNextWeek} className="h-8 w-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={viewMode === "week" ? goToNextWeek : goToNextMonth}
+            className="h-8 w-8"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2">
-        {days.map((day) => {
-          const dayBookings = getBookingsForDay(day);
-          const isToday = isSameDay(day, new Date());
+      {/* Title */}
+      <h3 className="font-display text-lg font-semibold text-foreground">
+        {viewMode === "week" 
+          ? format(currentWeekStart, "MMMM yyyy")
+          : format(currentMonth, "MMMM yyyy")
+        }
+      </h3>
 
-          return (
-            <div
-              key={day.toISOString()}
-              className={cn(
-                "min-h-[120px] p-2 border rounded-xl",
-                isToday ? "border-primary bg-primary/5" : "border-border"
-              )}
-            >
-              <div className="text-center mb-2">
-                <div className="text-xs text-muted-foreground uppercase">
-                  {format(day, "EEE")}
-                </div>
-                <div
-                  className={cn(
-                    "text-lg font-semibold",
-                    isToday ? "text-primary" : "text-foreground"
-                  )}
-                >
-                  {format(day, "d")}
-                </div>
-              </div>
+      {viewMode === "week" ? (
+        /* Week View Grid */
+        <div className="grid grid-cols-7 gap-2">
+          {days.map((day) => {
+            const dayBookings = getBookingsForDay(day);
+            const isToday = isSameDay(day, today);
 
-              <div className="space-y-1">
-                {dayBookings.slice(0, 3).map((booking) => (
-                  <button
-                    key={booking.id}
-                    onClick={() => setSelectedBooking(booking)}
+            return (
+              <div
+                key={day.toISOString()}
+                className={cn(
+                  "min-h-[120px] p-2 border rounded-xl",
+                  isToday ? "border-primary bg-primary/5" : "border-border"
+                )}
+              >
+                <div className="text-center mb-2">
+                  <div className="text-xs text-muted-foreground uppercase">
+                    {format(day, "EEE")}
+                  </div>
+                  <div
                     className={cn(
-                      "w-full text-left p-1.5 rounded text-xs transition-colors",
-                      "hover:ring-2 hover:ring-primary/20",
-                      booking.status === "cancelled"
-                        ? "bg-muted/50 text-muted-foreground line-through"
-                        : "bg-primary/10 text-foreground"
+                      "text-lg font-semibold",
+                      isToday ? "text-primary" : "text-foreground"
                     )}
                   >
-                    <div className="font-medium truncate">
-                      {format(new Date(booking.start_time), "h:mm a")}
-                    </div>
-                  </button>
-                ))}
-                {dayBookings.length > 3 && (
-                  <div className="text-xs text-muted-foreground text-center">
-                    +{dayBookings.length - 3} more
+                    {format(day, "d")}
                   </div>
-                )}
+                </div>
+
+                <div className="space-y-1">
+                  {dayBookings.slice(0, 3).map((booking) => (
+                    <button
+                      key={booking.id}
+                      onClick={() => setSelectedBooking(booking)}
+                      className={cn(
+                        "w-full text-left p-1.5 rounded text-xs transition-colors",
+                        "hover:ring-2 hover:ring-primary/20",
+                        booking.status === "cancelled"
+                          ? "bg-muted/50 text-muted-foreground line-through"
+                          : "bg-primary/10 text-foreground"
+                      )}
+                    >
+                      <div className="font-medium truncate">
+                        {format(new Date(booking.start_time), "h:mm a")}
+                      </div>
+                    </button>
+                  ))}
+                  {dayBookings.length > 3 && (
+                    <div className="text-xs text-muted-foreground text-center">
+                      +{dayBookings.length - 3} more
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        <>
+          {/* Month View Day Headers */}
+          <div className="grid grid-cols-7 gap-1">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Month View Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {monthDays.map((day, index) => {
+              const dayBookings = getBookingsForDay(day);
+              const isToday = isSameDay(day, today);
+              const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+              const isSelected = selectedDay && isSameDay(day, selectedDay);
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => setSelectedDay(day)}
+                  className={cn(
+                    "relative min-h-[70px] p-2 rounded-lg border transition-all text-left",
+                    isCurrentMonth ? "bg-background" : "bg-muted/30",
+                    isToday && "ring-2 ring-primary",
+                    isSelected && "bg-primary/10 border-primary",
+                    !isToday && !isSelected && "border-border",
+                    "hover:bg-accent"
+                  )}
+                >
+                  <span className={cn(
+                    "text-sm font-medium",
+                    isCurrentMonth ? "text-foreground" : "text-muted-foreground",
+                    isToday && "text-primary"
+                  )}>
+                    {format(day, "d")}
+                  </span>
+                  {dayBookings.length > 0 && (
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5">
+                      {dayBookings.length <= 3 ? (
+                        dayBookings.map((booking, i) => (
+                          <div
+                            key={i}
+                            className={cn(
+                              "w-1.5 h-1.5 rounded-full",
+                              statusDotColors[booking.status]
+                            )}
+                          />
+                        ))
+                      ) : (
+                        <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                          {dayBookings.length}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Selected Day Bookings */}
+          {renderDayBookings()}
+        </>
+      )}
 
       {/* Booking Detail Modal */}
       {selectedBooking && (

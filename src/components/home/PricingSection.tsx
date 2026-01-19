@@ -183,7 +183,7 @@ export function PricingSection() {
             <p className="text-muted-foreground mb-4">
               Want to explore the community first?
             </p>
-            <Link to="/signup?tier=free">
+            <Link to="/free-signup">
               <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
                 Join the Community Free →
               </Button>

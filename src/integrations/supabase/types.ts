@@ -1085,6 +1085,7 @@ export type Database = {
           feedback_frequency: string | null
           full_name: string | null
           id: string
+          is_free_tier: boolean | null
           lesson_rate: number | null
           membership_tier: string | null
           monthly_credits: number | null
@@ -1109,6 +1110,7 @@ export type Database = {
           feedback_frequency?: string | null
           full_name?: string | null
           id?: string
+          is_free_tier?: boolean | null
           lesson_rate?: number | null
           membership_tier?: string | null
           monthly_credits?: number | null
@@ -1133,6 +1135,7 @@ export type Database = {
           feedback_frequency?: string | null
           full_name?: string | null
           id?: string
+          is_free_tier?: boolean | null
           lesson_rate?: number | null
           membership_tier?: string | null
           monthly_credits?: number | null

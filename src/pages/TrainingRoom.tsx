@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -10,14 +10,20 @@ import {
   Send,
   ArrowLeft,
   Hash,
+  ImagePlus,
+  Menu,
+  X,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MemberDirectory } from "@/components/community/MemberDirectory";
+import { MessageReactions } from "@/components/community/MessageReactions";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 interface Channel {
@@ -28,14 +34,23 @@ interface Channel {
   icon: string | null;
 }
 
+interface Reaction {
+  id: string;
+  message_id: string;
+  user_id: string;
+  reaction: string;
+}
+
 interface Message {
   id: string;
   channel_id: string;
   user_id: string;
   content: string;
   created_at: string;
+  image_url?: string | null;
   displayName?: string;
   avatarUrl?: string | null;
+  reactions?: Reaction[];
 }
 
 const iconMap: Record<string, typeof Megaphone> = {
@@ -56,7 +71,13 @@ export default function TrainingRoom() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [showMobileChannels, setShowMobileChannels] = useState(false);
+  const [showMemberDirectory, setShowMemberDirectory] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     if (!loading && !isOnboardingComplete) {
@@ -88,64 +109,80 @@ export default function TrainingRoom() {
     }
   }, [user]);
 
-  // Fetch messages for active channel
-  useEffect(() => {
-    async function fetchMessages() {
-      if (!activeChannel) return;
-      
-      const { data: messagesData, error } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("channel_id", activeChannel.id)
-        .order("created_at", { ascending: true });
-      
-      if (error) {
-        console.error("Error fetching messages:", error);
-        return;
-      }
-      
-      if (!messagesData) {
-        setMessages([]);
-        return;
-      }
-      
-      // Fetch profiles for all unique user IDs
-      const userIds = [...new Set(messagesData.map(m => m.user_id))];
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("user_id, player_name, full_name, avatar_url")
-        .in("user_id", userIds);
-      
-      const profileMap = new Map(
-        profilesData?.map(p => [
-          p.user_id, 
-          { 
-            name: p.player_name || p.full_name || "Anonymous",
-            avatarUrl: p.avatar_url
-          }
-        ]) || []
-      );
-      
-      const messagesWithNames: Message[] = messagesData.map(msg => {
-        const profileInfo = profileMap.get(msg.user_id);
-        return {
-          ...msg,
-          displayName: profileInfo?.name || "Anonymous",
-          avatarUrl: profileInfo?.avatarUrl || null,
-        };
-      });
-      
-      setMessages(messagesWithNames);
+  // Fetch messages with reactions for active channel
+  const fetchMessages = useCallback(async () => {
+    if (!activeChannel) return;
+    
+    const { data: messagesData, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("channel_id", activeChannel.id)
+      .order("created_at", { ascending: true });
+    
+    if (error) {
+      console.error("Error fetching messages:", error);
+      return;
     }
     
-    fetchMessages();
+    if (!messagesData || messagesData.length === 0) {
+      setMessages([]);
+      return;
+    }
+    
+    // Fetch profiles for all unique user IDs
+    const userIds = [...new Set(messagesData.map(m => m.user_id))];
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("user_id, player_name, full_name, avatar_url")
+      .in("user_id", userIds);
+    
+    // Fetch reactions for all messages
+    const messageIds = messagesData.map(m => m.id);
+    const { data: reactionsData } = await supabase
+      .from("message_reactions")
+      .select("*")
+      .in("message_id", messageIds);
+    
+    const profileMap = new Map(
+      profilesData?.map(p => [
+        p.user_id, 
+        { 
+          name: p.player_name || p.full_name || "Anonymous",
+          avatarUrl: p.avatar_url
+        }
+      ]) || []
+    );
+    
+    const reactionsMap = new Map<string, Reaction[]>();
+    reactionsData?.forEach(r => {
+      if (!reactionsMap.has(r.message_id)) {
+        reactionsMap.set(r.message_id, []);
+      }
+      reactionsMap.get(r.message_id)!.push(r);
+    });
+    
+    const messagesWithData: Message[] = messagesData.map(msg => {
+      const profileInfo = profileMap.get(msg.user_id);
+      return {
+        ...msg,
+        displayName: profileInfo?.name || "Anonymous",
+        avatarUrl: profileInfo?.avatarUrl || null,
+        reactions: reactionsMap.get(msg.id) || [],
+      };
+    });
+    
+    setMessages(messagesWithData);
   }, [activeChannel]);
 
-  // Subscribe to realtime messages
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  // Subscribe to realtime messages and reactions
   useEffect(() => {
     if (!activeChannel) return;
     
-    const channel = supabase
+    const messagesChannel = supabase
       .channel(`messages:${activeChannel.id}`)
       .on(
         "postgres_changes",
@@ -156,9 +193,8 @@ export default function TrainingRoom() {
           filter: `channel_id=eq.${activeChannel.id}`,
         },
         async (payload) => {
-          const newMsg = payload.new as { id: string; channel_id: string; user_id: string; content: string; created_at: string };
+          const newMsg = payload.new as { id: string; channel_id: string; user_id: string; content: string; created_at: string; image_url?: string };
           
-          // Fetch the profile for this user
           const { data: profileData } = await supabase
             .from("profiles")
             .select("player_name, full_name, avatar_url")
@@ -169,17 +205,36 @@ export default function TrainingRoom() {
             ...newMsg,
             displayName: profileData?.player_name || profileData?.full_name || "Anonymous",
             avatarUrl: profileData?.avatar_url || null,
+            reactions: [],
           };
           
           setMessages((prev) => [...prev, messageWithName]);
         }
       )
       .subscribe();
+
+    // Subscribe to reactions changes
+    const reactionsChannel = supabase
+      .channel(`reactions:${activeChannel.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "message_reactions",
+        },
+        () => {
+          // Refetch messages to get updated reactions
+          fetchMessages();
+        }
+      )
+      .subscribe();
     
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(reactionsChannel);
     };
-  }, [activeChannel]);
+  }, [activeChannel, fetchMessages]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -188,20 +243,80 @@ export default function TrainingRoom() {
     }
   }, [messages]);
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JPG, PNG, WebP, or GIF image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 10MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const clearImageSelection = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeChannel || !user) return;
+    if ((!newMessage.trim() && !selectedImage) || !activeChannel || !user) return;
     
     setSending(true);
     try {
+      let imageUrl: string | null = null;
+
+      // Upload image if selected
+      if (selectedImage) {
+        setUploadingImage(true);
+        const fileExt = selectedImage.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("chat-images")
+          .upload(filePath, selectedImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from("chat-images")
+          .getPublicUrl(filePath);
+
+        imageUrl = urlData.publicUrl;
+        setUploadingImage(false);
+      }
+
       const { error } = await supabase.from("messages").insert({
         channel_id: activeChannel.id,
         user_id: user.id,
-        content: newMessage.trim(),
+        content: newMessage.trim() || (imageUrl ? "" : ""),
+        image_url: imageUrl,
       });
       
       if (error) throw error;
       setNewMessage("");
+      clearImageSelection();
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
@@ -211,6 +326,7 @@ export default function TrainingRoom() {
       });
     } finally {
       setSending(false);
+      setUploadingImage(false);
     }
   };
 
@@ -268,208 +384,318 @@ export default function TrainingRoom() {
 
   const messageGroups = groupMessagesByDate(messages);
 
+  // Channel sidebar content (shared between desktop and mobile)
+  const ChannelSidebar = () => (
+    <>
+      <div className="p-4 border-b border-border">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            navigate("/dashboard");
+            setShowMobileChannels(false);
+          }}
+          className="text-muted-foreground hover:text-foreground mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </Button>
+        <Link to="/" className="inline-block mb-2">
+          <img 
+            src={swingInstituteLogo}
+            alt="Swing Institute"
+            className="h-10 w-auto object-contain"
+          />
+        </Link>
+        <h2 className="font-display text-xl font-bold text-foreground">
+          Training Room
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Connect with other players
+        </p>
+      </div>
+      
+      <ScrollArea className="flex-1">
+        <div className="p-2 space-y-1">
+          {channels.map((channel) => {
+            const IconComponent = iconMap[channel.icon || "message-square"] || Hash;
+            const isActive = activeChannel?.id === channel.id;
+            
+            return (
+              <button
+                key={channel.id}
+                onClick={() => {
+                  setActiveChannel(channel);
+                  setShowMobileChannels(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                }`}
+              >
+                <IconComponent className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm font-medium truncate">
+                  {channel.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
       
-      <main className="flex-1 pt-16 flex">
-        {/* Sidebar - Channels */}
+      <main className="flex-1 pt-16 flex overflow-hidden">
+        {/* Desktop Sidebar - Channels */}
         <motion.aside
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="w-64 bg-card border-r border-border flex flex-col"
+          className="hidden md:flex w-64 bg-card border-r border-border flex-col flex-shrink-0"
         >
-          <div className="p-4 border-b border-border">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/dashboard")}
-              className="text-muted-foreground hover:text-foreground mb-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <Link to="/" className="inline-block mb-2">
-              <img 
-                src={swingInstituteLogo}
-                alt="Swing Institute"
-                className="h-10 w-auto object-contain"
-              />
-            </Link>
-            <h2 className="font-display text-xl font-bold text-foreground">
-              Training Room
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Connect with other players
-            </p>
-          </div>
-          
-          <ScrollArea className="flex-1">
-            <div className="p-2 space-y-1">
-              {channels.map((channel) => {
-                const IconComponent = iconMap[channel.icon || "message-square"] || Hash;
-                const isActive = activeChannel?.id === channel.id;
-                
-                return (
-                  <button
-                    key={channel.id}
-                    onClick={() => setActiveChannel(channel)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
-                  >
-                    <IconComponent className="w-4 h-4 flex-shrink-0" />
-                    <span className="text-sm font-medium truncate">
-                      {channel.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </ScrollArea>
+          <ChannelSidebar />
         </motion.aside>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {activeChannel ? (
             <>
               {/* Channel Header */}
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="px-6 py-4 border-b border-border bg-card/50"
+                className="px-4 md:px-6 py-3 md:py-4 border-b border-border bg-card/50 flex-shrink-0"
               >
-                <div className="flex items-center gap-3">
-                  {(() => {
-                    const IconComponent = iconMap[activeChannel.icon || "message-square"] || Hash;
-                    return <IconComponent className="w-5 h-5 text-primary" />;
-                  })()}
-                  <div>
-                    <h3 className="font-display text-lg font-bold text-foreground">
-                      {activeChannel.name}
-                    </h3>
-                    {activeChannel.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {activeChannel.description}
-                      </p>
-                    )}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Mobile menu button */}
+                    <Sheet open={showMobileChannels} onOpenChange={setShowMobileChannels}>
+                      <SheetTrigger asChild>
+                        <Button variant="ghost" size="sm" className="md:hidden p-2">
+                          <Menu className="w-5 h-5" />
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="left" className="w-64 p-0 bg-card border-border">
+                        <div className="flex flex-col h-full">
+                          <ChannelSidebar />
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+
+                    {(() => {
+                      const IconComponent = iconMap[activeChannel.icon || "message-square"] || Hash;
+                      return <IconComponent className="w-5 h-5 text-primary flex-shrink-0" />;
+                    })()}
+                    <div className="min-w-0">
+                      <h3 className="font-display text-lg font-bold text-foreground truncate">
+                        {activeChannel.name}
+                      </h3>
+                      {activeChannel.description && (
+                        <p className="text-sm text-muted-foreground truncate hidden sm:block">
+                          {activeChannel.description}
+                        </p>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Member directory toggle */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowMemberDirectory(!showMemberDirectory)}
+                    className={`p-2 ${showMemberDirectory ? "bg-muted" : ""}`}
+                  >
+                    <Users className="w-5 h-5" />
+                  </Button>
                 </div>
               </motion.div>
 
-              {/* Messages */}
-              <ScrollArea ref={scrollRef} className="flex-1 px-6 py-4">
-                <AnimatePresence mode="popLayout">
-                  {messageGroups.length === 0 ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex flex-col items-center justify-center h-full text-center py-20"
-                    >
-                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                        {(() => {
-                          const IconComponent = iconMap[activeChannel.icon || "message-square"] || Hash;
-                          return <IconComponent className="w-8 h-8 text-muted-foreground" />;
-                        })()}
-                      </div>
-                      <h4 className="font-display text-xl font-bold text-foreground mb-2">
-                        Welcome to {activeChannel.name}
-                      </h4>
-                      <p className="text-muted-foreground max-w-md">
-                        This is the beginning of the {activeChannel.name} channel. 
-                        Start the conversation!
-                      </p>
-                    </motion.div>
-                  ) : (
-                    messageGroups.map((group, groupIndex) => (
-                      <div key={group.date} className="mb-6">
-                        {/* Date Divider */}
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className="flex-1 h-px bg-border" />
-                          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                            {formatDate(group.date)}
-                          </span>
-                          <div className="flex-1 h-px bg-border" />
-                        </div>
-                        
-                        {/* Messages for this date */}
-                        <div className="space-y-4">
-                          {group.messages.map((message, msgIndex) => {
-                            const displayName = message.displayName || "Anonymous";
-                            const isOwnMessage = message.user_id === user?.id;
+              <div className="flex-1 flex overflow-hidden">
+                {/* Messages Area */}
+                <div className="flex-1 flex flex-col min-w-0">
+                  <ScrollArea ref={scrollRef} className="flex-1 px-4 md:px-6 py-4">
+                    <AnimatePresence mode="popLayout">
+                      {messageGroups.length === 0 ? (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="flex flex-col items-center justify-center h-full text-center py-20"
+                        >
+                          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                            {(() => {
+                              const IconComponent = iconMap[activeChannel.icon || "message-square"] || Hash;
+                              return <IconComponent className="w-8 h-8 text-muted-foreground" />;
+                            })()}
+                          </div>
+                          <h4 className="font-display text-xl font-bold text-foreground mb-2">
+                            Welcome to {activeChannel.name}
+                          </h4>
+                          <p className="text-muted-foreground max-w-md">
+                            This is the beginning of the {activeChannel.name} channel. 
+                            Start the conversation!
+                          </p>
+                        </motion.div>
+                      ) : (
+                        messageGroups.map((group) => (
+                          <div key={group.date} className="mb-6">
+                            {/* Date Divider */}
+                            <div className="flex items-center gap-4 mb-4">
+                              <div className="flex-1 h-px bg-border" />
+                              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                                {formatDate(group.date)}
+                              </span>
+                              <div className="flex-1 h-px bg-border" />
+                            </div>
                             
-                            return (
-                              <motion.div
-                                key={message.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: msgIndex * 0.02 }}
-                                className={`flex gap-3 ${isOwnMessage ? "flex-row-reverse" : ""}`}
-                              >
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
-                                  isOwnMessage ? "bg-primary" : "bg-secondary"
-                                }`}>
-                                  {message.avatarUrl ? (
-                                    <img 
-                                      src={message.avatarUrl} 
-                                      alt={displayName}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  ) : (
-                                    <span className="text-xs font-semibold text-white">
-                                      {displayName.charAt(0).toUpperCase()}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className={`flex-1 max-w-xl ${isOwnMessage ? "text-right" : ""}`}>
-                                  <div className={`flex items-center gap-2 mb-1 ${isOwnMessage ? "justify-end" : ""}`}>
-                                    <span className="text-sm font-semibold text-foreground">
-                                      {displayName}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      {formatTime(message.created_at)}
-                                    </span>
-                                  </div>
-                                  <div className={`inline-block px-4 py-2 rounded-lg ${
-                                    isOwnMessage 
-                                      ? "bg-primary/10 text-foreground" 
-                                      : "bg-muted text-foreground"
-                                  }`}>
-                                    <p className="text-sm whitespace-pre-wrap break-words">
-                                      {message.content}
-                                    </p>
-                                  </div>
-                                </div>
-                              </motion.div>
-                            );
-                          })}
-                        </div>
+                            {/* Messages for this date */}
+                            <div className="space-y-4">
+                              {group.messages.map((message, msgIndex) => {
+                                const displayName = message.displayName || "Anonymous";
+                                const isOwnMessage = message.user_id === user?.id;
+                                
+                                return (
+                                  <motion.div
+                                    key={message.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: msgIndex * 0.02 }}
+                                    className={`group flex gap-3 ${isOwnMessage ? "flex-row-reverse" : ""}`}
+                                  >
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
+                                      isOwnMessage ? "bg-primary" : "bg-secondary"
+                                    }`}>
+                                      {message.avatarUrl ? (
+                                        <img 
+                                          src={message.avatarUrl} 
+                                          alt={displayName}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <span className="text-xs font-semibold text-white">
+                                          {displayName.charAt(0).toUpperCase()}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className={`flex-1 max-w-xl ${isOwnMessage ? "text-right" : ""}`}>
+                                      <div className={`flex items-center gap-2 mb-1 ${isOwnMessage ? "justify-end" : ""}`}>
+                                        <span className="text-sm font-semibold text-foreground">
+                                          {displayName}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {formatTime(message.created_at)}
+                                        </span>
+                                      </div>
+                                      <div className={`inline-block ${isOwnMessage ? "text-right" : "text-left"}`}>
+                                        {/* Image if present */}
+                                        {message.image_url && (
+                                          <img
+                                            src={message.image_url}
+                                            alt="Shared image"
+                                            className="max-w-xs md:max-w-sm rounded-lg mb-2 cursor-pointer hover:opacity-90 transition-opacity"
+                                            onClick={() => window.open(message.image_url!, "_blank")}
+                                          />
+                                        )}
+                                        {/* Text content */}
+                                        {message.content && (
+                                          <div className={`inline-block px-4 py-2 rounded-lg ${
+                                            isOwnMessage 
+                                              ? "bg-primary/10 text-foreground" 
+                                              : "bg-muted text-foreground"
+                                          }`}>
+                                            <p className="text-sm whitespace-pre-wrap break-words">
+                                              {message.content}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {/* Reactions */}
+                                        <MessageReactions
+                                          messageId={message.id}
+                                          reactions={message.reactions || []}
+                                          currentUserId={user?.id || ""}
+                                          onReactionChange={fetchMessages}
+                                        />
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </AnimatePresence>
+                  </ScrollArea>
+
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="px-4 md:px-6 py-3 border-t border-border bg-card/50">
+                      <div className="relative inline-block">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="max-h-32 rounded-lg border border-border"
+                        />
+                        <button
+                          onClick={clearImageSelection}
+                          className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
                       </div>
-                    ))
+                    </div>
+                  )}
+
+                  {/* Message Input */}
+                  <div className="px-4 md:px-6 py-3 md:py-4 border-t border-border bg-card/50 flex-shrink-0">
+                    <form onSubmit={handleSendMessage} className="flex gap-2 md:gap-3">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={sending || uploadingImage}
+                        className="flex-shrink-0"
+                      >
+                        <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                      </Button>
+                      <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder={`Message #${activeChannel.slug}...`}
+                        className="flex-1 bg-muted border-border focus:border-primary"
+                        disabled={sending || uploadingImage}
+                      />
+                      <Button 
+                        type="submit" 
+                        disabled={(!newMessage.trim() && !selectedImage) || sending || uploadingImage}
+                        className="bg-primary hover:bg-primary/90 flex-shrink-0"
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+
+                {/* Member Directory Sidebar (Desktop) */}
+                <AnimatePresence>
+                  {showMemberDirectory && (
+                    <MemberDirectory
+                      onClose={() => setShowMemberDirectory(false)}
+                      className="hidden lg:flex w-64 flex-shrink-0"
+                    />
                   )}
                 </AnimatePresence>
-              </ScrollArea>
-
-              {/* Message Input */}
-              <div className="px-6 py-4 border-t border-border bg-card/50">
-                <form onSubmit={handleSendMessage} className="flex gap-3">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder={`Message #${activeChannel.slug}...`}
-                    className="flex-1 bg-muted border-border focus:border-primary"
-                    disabled={sending}
-                  />
-                  <Button 
-                    type="submit" 
-                    disabled={!newMessage.trim() || sending}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
-                </form>
               </div>
             </>
           ) : (
@@ -478,6 +704,13 @@ export default function TrainingRoom() {
             </div>
           )}
         </div>
+
+        {/* Member Directory Sheet (Mobile/Tablet) */}
+        <Sheet open={showMemberDirectory} onOpenChange={setShowMemberDirectory}>
+          <SheetContent side="right" className="w-72 p-0 bg-card border-border lg:hidden">
+            <MemberDirectory onClose={() => setShowMemberDirectory(false)} className="h-full" />
+          </SheetContent>
+        </Sheet>
       </main>
     </div>
   );

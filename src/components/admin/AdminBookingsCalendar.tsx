@@ -172,13 +172,37 @@ export function AdminBookingsCalendar({
         </div>
       </div>
 
-      {/* Title */}
-      <h3 className="font-display text-lg font-semibold text-foreground">
-        {viewMode === "week" 
-          ? format(currentWeekStart, "MMMM yyyy")
-          : format(currentMonth, "MMMM yyyy")
-        }
-      </h3>
+      {/* Title & Legend */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h3 className="font-display text-lg font-semibold text-foreground">
+          {viewMode === "week" 
+            ? format(currentWeekStart, "MMMM yyyy")
+            : format(currentMonth, "MMMM yyyy")
+          }
+        </h3>
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-yellow-500" />
+            <span className="text-muted-foreground">Pending</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <span className="text-muted-foreground">Confirmed</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="text-muted-foreground">Completed</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-red-500" />
+            <span className="text-muted-foreground">Cancelled</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-gray-500" />
+            <span className="text-muted-foreground">No Show</span>
+          </div>
+        </div>
+      </div>
 
       {viewMode === "week" ? (
         /* Week View Grid */

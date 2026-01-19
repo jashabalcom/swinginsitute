@@ -71,7 +71,7 @@ export default function TrainAtlanta() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                  <Link to="/signup">
+                  <Link to="/packages">
                     <Button className="btn-hero group">
                       Book Your Session
                       <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -200,7 +200,7 @@ export default function TrainAtlanta() {
                     </span>
                   )}
                   <p className="text-sm text-muted-foreground mb-6">{pkg.description}</p>
-                  <Link to="/signup" className="w-full block">
+                  <Link to="/packages" className="w-full block">
                     <Button
                       className={`w-full ${
                         pkg.popular

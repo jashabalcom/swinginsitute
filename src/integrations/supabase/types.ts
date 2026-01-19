@@ -847,6 +847,11 @@ export type Database = {
           player_age: number | null
           player_level: string | null
           player_name: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_end_date: string | null
+          subscription_start_date: string | null
+          subscription_status: string | null
           updated_at: string
           user_id: string
         }
@@ -866,6 +871,11 @@ export type Database = {
           player_age?: number | null
           player_level?: string | null
           player_name?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
           updated_at?: string
           user_id: string
         }
@@ -885,6 +895,11 @@ export type Database = {
           player_age?: number | null
           player_level?: string | null
           player_name?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
           updated_at?: string
           user_id?: string
         }

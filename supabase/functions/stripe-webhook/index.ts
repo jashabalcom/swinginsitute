@@ -7,11 +7,31 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Package mapping - maps Stripe product IDs to session counts and validity
+// Mapping of Stripe product IDs to membership tiers
+const PRODUCT_TO_TIER: Record<string, string> = {
+  "prod_Tp4siVSGD0PG7k": "starter",
+  "prod_Tp4sKzTi2pyda4": "pro",
+  "prod_Tp4sXGo0L4c2bn": "elite",
+  "prod_Tp4s6jRZcg949u": "hybrid-core",
+  "prod_Tp4t69jx1LlFu7": "hybrid-pro",
+};
+
+const TIER_CONFIG: Record<string, { lessonRate: number; monthlyCredits: number; feedbackFrequency: string }> = {
+  "starter": { lessonRate: 145, monthlyCredits: 2, feedbackFrequency: "weekly" },
+  "pro": { lessonRate: 115, monthlyCredits: 4, feedbackFrequency: "priority" },
+  "elite": { lessonRate: 115, monthlyCredits: -1, feedbackFrequency: "priority" },
+  "hybrid-core": { lessonRate: 115, monthlyCredits: 4, feedbackFrequency: "priority" },
+  "hybrid-pro": { lessonRate: 115, monthlyCredits: -1, feedbackFrequency: "priority" },
+};
+
 const PACKAGE_MAPPING: Record<string, { sessions: number; validityDays: number }> = {
-  "prod_Tp2pZybeOOoEhq": { sessions: 3, validityDays: 90 }, // 3-Lesson Package
-  "prod_Tp2pE7QdK9VryM": { sessions: 6, validityDays: 180 }, // 6-Lesson Package
-  "prod_Tp2pUYu4EmGjeu": { sessions: 12, validityDays: 365 }, // 12-Lesson Package
+  "prod_Tp2pZybeOOoEhq": { sessions: 3, validityDays: 90 },
+  "prod_Tp2pE7QdK9VryM": { sessions: 6, validityDays: 180 },
+  "prod_Tp2pUYu4EmGjeu": { sessions: 12, validityDays: 365 },
+};
+
+const logStep = (step: string, details?: any) => {
+  console.log(`[STRIPE-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
 serve(async (req) => {
@@ -19,99 +39,85 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-    apiVersion: "2025-08-27.basil",
-  });
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-  );
-
   try {
-    const body = await req.text();
-    const signature = req.headers.get("stripe-signature");
-    
-    // If no webhook secret, just parse the body directly for testing
-    let event: Stripe.Event;
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    
-    if (webhookSecret && signature) {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    } else {
-      event = JSON.parse(body);
-    }
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
 
-    console.log(`Processing webhook event: ${event.type}`);
+    const body = await req.text();
+    const event: Stripe.Event = JSON.parse(body);
+    logStep("Event received", { type: event.type });
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
+      const customerEmail = session.customer_email || session.customer_details?.email;
       const userId = session.metadata?.user_id;
-      
-      if (!userId) {
-        console.log("No user_id in metadata, skipping");
-        return new Response(JSON.stringify({ received: true }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+      const customerId = session.customer as string;
 
-      // Get the line items to determine what was purchased
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-      
-      for (const item of lineItems.data) {
-        const price = await stripe.prices.retrieve(item.price?.id || "");
-        const productId = price.product as string;
-        
-        // Check if it's a lesson package
-        const packageInfo = PACKAGE_MAPPING[productId];
-        
-        if (packageInfo) {
-          // Get or create package record
-          const { data: existingPackage } = await supabase
-            .from("packages")
-            .select("id")
-            .eq("name", item.description || "Lesson Package")
-            .maybeSingle();
+      if (session.mode === "subscription" && customerEmail) {
+        const subscriptionId = session.subscription as string;
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const productId = subscription.items.data[0]?.price.product as string;
+        const tier = PRODUCT_TO_TIER[productId];
 
-          let packageId = existingPackage?.id;
+        if (tier) {
+          let existingUserId = userId;
           
-          if (!packageId) {
-            // Create package if not exists
-            const { data: newPackage } = await supabase
-              .from("packages")
-              .insert({
-                name: item.description || "Lesson Package",
-                session_count: packageInfo.sessions,
-                base_price: (price.unit_amount || 0) / 100,
-                member_price: (price.unit_amount || 0) / 100,
-                validity_days: packageInfo.validityDays,
-              })
-              .select()
-              .single();
-            packageId = newPackage?.id;
+          if (!existingUserId) {
+            const { data: users } = await supabaseAdmin.auth.admin.listUsers();
+            const existingUser = users.users.find(u => u.email === customerEmail);
+            existingUserId = existingUser?.id;
           }
 
-          // Calculate expiration date
-          const expiresAt = new Date();
-          expiresAt.setDate(expiresAt.getDate() + packageInfo.validityDays);
-
-          // Create purchased package record
-          const { error: purchaseError } = await supabase
-            .from("purchased_packages")
-            .insert({
-              user_id: userId,
-              package_id: packageId,
-              sessions_remaining: packageInfo.sessions,
-              sessions_total: packageInfo.sessions,
-              expires_at: expiresAt.toISOString(),
-              status: "active",
-              stripe_payment_id: session.payment_intent as string,
+          if (!existingUserId) {
+            const { data: newUser } = await supabaseAdmin.auth.admin.createUser({
+              email: customerEmail,
+              email_confirm: true,
+              user_metadata: { needs_password_setup: true, membership_tier: tier },
             });
+            existingUserId = newUser.user?.id;
+            logStep("New user created", { userId: existingUserId });
+          }
 
-          if (purchaseError) {
-            console.error("Error creating purchased package:", purchaseError);
-          } else {
-            console.log(`Created purchased package for user ${userId}`);
+          if (existingUserId) {
+            const tierConfig = TIER_CONFIG[tier];
+            await supabaseAdmin.from("profiles").upsert({
+              user_id: existingUserId,
+              membership_tier: tier,
+              subscription_status: "active",
+              subscription_start_date: new Date(subscription.current_period_start * 1000).toISOString(),
+              subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId,
+              lesson_rate: tierConfig.lessonRate,
+              monthly_credits: tierConfig.monthlyCredits,
+              feedback_frequency: tierConfig.feedbackFrequency,
+              credits_remaining: tierConfig.monthlyCredits === -1 ? 999 : tierConfig.monthlyCredits,
+            }, { onConflict: "user_id" });
+            logStep("Profile updated", { tier, userId: existingUserId });
+          }
+        }
+      }
+
+      if (session.mode === "payment" && userId) {
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+        for (const item of lineItems.data) {
+          const productId = item.price?.product as string;
+          const packageInfo = PACKAGE_MAPPING[productId];
+          if (packageInfo) {
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + packageInfo.validityDays);
+            await supabaseAdmin.from("purchased_packages").insert({
+              user_id: userId,
+              sessions_total: packageInfo.sessions,
+              sessions_remaining: packageInfo.sessions,
+              expires_at: expiresAt.toISOString(),
+              stripe_payment_id: session.payment_intent as string,
+              status: "active",
+            });
           }
         }
       }
@@ -121,9 +127,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Webhook error:", message);
-    return new Response(JSON.stringify({ error: message }), {
+    logStep("ERROR", { message: error instanceof Error ? error.message : "Unknown" });
+    return new Response(JSON.stringify({ error: "Webhook error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     });

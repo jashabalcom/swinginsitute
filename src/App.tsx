@@ -29,6 +29,9 @@ import Settings from "./pages/Settings";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+import Checkout from "./pages/Checkout";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import CompleteAccount from "./pages/CompleteAccount";
 
 const queryClient = new QueryClient();
 

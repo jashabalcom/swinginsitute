@@ -20,6 +20,7 @@ import { PhaseProgressCard } from "@/components/dashboard/PhaseProgressCard";
 import { WeeklyDrillsCard } from "@/components/dashboard/WeeklyDrillsCard";
 import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
 import { CoachFeedbackCard } from "@/components/dashboard/CoachFeedbackCard";
+import { NotificationBell } from "@/components/community/NotificationBell";
 
 
 const tierBadgeColors: Record<string, string> = {
@@ -109,7 +110,7 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <Button 
                   variant="default" 
                   className="bg-primary hover:bg-primary/90"
@@ -130,6 +131,7 @@ export default function Dashboard() {
                     Book Session
                   </Button>
                 </Link>
+                <NotificationBell />
                 <Link to="/settings">
                   <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
                     <Settings className="w-4 h-4" />

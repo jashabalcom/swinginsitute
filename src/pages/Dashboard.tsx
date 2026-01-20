@@ -16,12 +16,14 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
+import { useCurriculum } from "@/hooks/useCurriculum";
 import { PhaseProgressCard } from "@/components/dashboard/PhaseProgressCard";
 import { WeeklyDrillsCard } from "@/components/dashboard/WeeklyDrillsCard";
 import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
 import { CoachFeedbackCard } from "@/components/dashboard/CoachFeedbackCard";
 import { NotificationBell } from "@/components/community/NotificationBell";
 import { MemberNavigation } from "@/components/dashboard/MemberNavigation";
+import { ContinueWatchingWidget } from "@/components/dashboard/ContinueWatchingWidget";
 
 
 const tierBadgeColors: Record<string, string> = {
@@ -51,6 +53,10 @@ export default function Dashboard() {
     PHASE_INFO,
     WEEKS_PER_PHASE,
   } = useProgressTracking();
+
+  const { getLastWatchedLesson, getLessonProgress } = useCurriculum();
+  const lastWatchedLesson = getLastWatchedLesson();
+  const lastWatchedProgress = lastWatchedLesson ? getLessonProgress(lastWatchedLesson.id) : 0;
 
   useEffect(() => {
     // Only redirect to onboarding after profile is fully loaded and confirmed incomplete
@@ -303,6 +309,12 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* Continue Watching Widget */}
+      <ContinueWatchingWidget 
+        lesson={lastWatchedLesson} 
+        progress={lastWatchedProgress} 
+      />
     </div>
   );
 }

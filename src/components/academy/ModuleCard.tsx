@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle2, ChevronRight, PlayCircle, Clock, BookOpen } from "lucide-react";
+import { CheckCircle2, ChevronRight, PlayCircle, Clock, BookOpen, Play } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { CurriculumModule } from "@/hooks/useCurriculum";
 import { cn } from "@/lib/utils";
+import logoImage from "@/assets/swing-institute-logo.png";
 
 interface ModuleCardProps {
   module: CurriculumModule;
@@ -52,40 +53,55 @@ export function ModuleCard({
         className="block p-5 rounded-xl border bg-card hover:bg-card/80 border-border hover:border-primary/50 transition-all duration-300 group"
       >
         <div className="flex items-start gap-4">
-          {/* Status Icon with Play Overlay */}
+          {/* Thumbnail with Logo */}
           <div className="relative flex-shrink-0">
             <div
               className={cn(
-                "w-14 h-14 rounded-xl flex items-center justify-center",
-                isComplete ? "bg-green-500/20 text-green-500" : "bg-primary/20 text-primary"
+                "w-20 h-20 rounded-xl overflow-hidden flex items-center justify-center",
+                isComplete ? "bg-green-500/10" : "bg-[#0B1C2D]"
               )}
             >
+              <img 
+                src={logoImage} 
+                alt="Module thumbnail"
+                className="w-14 h-14 object-contain"
+              />
+            </div>
+            
+            {/* Play/Complete overlay */}
+            <div className={cn(
+              "absolute inset-0 flex items-center justify-center rounded-xl transition-all",
+              isComplete 
+                ? "bg-green-500/60" 
+                : "bg-black/30 group-hover:bg-primary/60"
+            )}>
               {isComplete ? (
-                <CheckCircle2 className="w-6 h-6" />
+                <CheckCircle2 className="w-8 h-8 text-white" />
               ) : (
-                <PlayCircle className="w-6 h-6" />
+                <Play className="w-6 h-6 text-white fill-white" />
               )}
             </div>
+
             {/* Progress ring for in-progress modules */}
             {!isComplete && progress > 0 && (
-              <svg className="absolute inset-0 w-14 h-14 -rotate-90">
+              <svg className="absolute -inset-1 w-[88px] h-[88px] -rotate-90">
                 <circle
-                  cx="28"
-                  cy="28"
-                  r="24"
+                  cx="44"
+                  cy="44"
+                  r="40"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="3"
                   fill="none"
-                  className="text-muted"
+                  className="text-muted/30"
                 />
                 <circle
-                  cx="28"
-                  cy="28"
-                  r="24"
+                  cx="44"
+                  cy="44"
+                  r="40"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="3"
                   fill="none"
-                  strokeDasharray={`${(progress / 100) * 150.8} 150.8`}
+                  strokeDasharray={`${(progress / 100) * 251.3} 251.3`}
                   className="text-primary"
                 />
               </svg>

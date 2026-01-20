@@ -4,6 +4,7 @@ import { CheckCircle2, PlayCircle, Clock, FileText, Lock, Play } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { Lesson } from "@/hooks/useCurriculum";
 import { cn } from "@/lib/utils";
+import logoImage from "@/assets/swing-institute-logo.png";
 
 interface LessonCardProps {
   lesson: Lesson;
@@ -45,33 +46,47 @@ export function LessonCard({
             : "bg-card border-border hover:border-primary/50 hover:bg-card/80"
         )}
       >
-        {/* Video Thumbnail / Status Icon */}
+        {/* Video Thumbnail with Logo */}
         <div className="relative flex-shrink-0">
           <div
             className={cn(
-              "w-16 h-12 rounded-lg flex items-center justify-center",
+              "w-20 h-14 rounded-lg overflow-hidden flex items-center justify-center",
               isLocked
-                ? "bg-muted text-muted-foreground"
+                ? "bg-muted"
                 : isCompleted
-                ? "bg-green-500/20 text-green-500"
-                : isInProgress
-                ? "bg-primary/20 text-primary"
-                : "bg-muted text-muted-foreground"
+                ? "bg-green-500/10"
+                : "bg-[#0B1C2D]"
             )}
           >
-            {isLocked ? (
-              <Lock className="w-5 h-5" />
-            ) : isCompleted ? (
-              <CheckCircle2 className="w-6 h-6" />
-            ) : (
-              <PlayCircle className="w-6 h-6" />
-            )}
+            <img 
+              src={logoImage} 
+              alt="Lesson thumbnail"
+              className={cn(
+                "w-12 h-12 object-contain",
+                isLocked && "opacity-50"
+              )}
+            />
           </div>
           
-          {/* Play button overlay on hover */}
-          {!isLocked && !isCompleted && (
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 rounded-lg">
-              <Play className="w-5 h-5 text-white fill-white" />
+          {/* Play button overlay */}
+          {!isLocked && (
+            <div className={cn(
+              "absolute inset-0 flex items-center justify-center transition-opacity rounded-lg",
+              isCompleted 
+                ? "bg-green-500/60" 
+                : "bg-black/40 group-hover:bg-primary/70"
+            )}>
+              {isCompleted ? (
+                <CheckCircle2 className="w-6 h-6 text-white" />
+              ) : (
+                <Play className="w-5 h-5 text-white fill-white" />
+              )}
+            </div>
+          )}
+
+          {isLocked && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+              <Lock className="w-5 h-5 text-white/70" />
             </div>
           )}
 

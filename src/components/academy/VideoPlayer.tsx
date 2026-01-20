@@ -12,6 +12,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logoImage from "@/assets/swing-institute-logo.png";
 
 interface VideoPlayerProps {
   src: string | null;
@@ -234,9 +235,13 @@ export function VideoPlayer({
 
   if (!src) {
     return (
-      <div className="aspect-video bg-muted rounded-xl flex items-center justify-center">
+      <div className="aspect-video bg-[#0B1C2D] rounded-xl flex items-center justify-center">
         <div className="text-center">
-          <Play className="w-16 h-16 text-muted-foreground mb-2 mx-auto" />
+          <img 
+            src={logoImage} 
+            alt="Video coming soon"
+            className="w-24 h-24 object-contain mx-auto mb-4 opacity-60"
+          />
           <p className="text-muted-foreground">Video coming soon</p>
         </div>
       </div>

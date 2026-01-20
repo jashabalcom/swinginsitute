@@ -61,7 +61,7 @@ export function Header() {
                 </Link>
                 <Link to="/masterclass">
                   <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
-                    Start Free
+                    Watch Masterclass
                   </Button>
                 </Link>
               </>
@@ -121,7 +121,7 @@ export function Header() {
                     </Link>
                     <Link to="/masterclass" onClick={() => setIsOpen(false)}>
                       <Button className="w-full bg-primary hover:bg-primary/90">
-                        Start Free
+                        Watch Masterclass
                       </Button>
                     </Link>
                   </>

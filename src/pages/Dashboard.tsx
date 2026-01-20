@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -218,6 +218,12 @@ export default function Dashboard() {
                 weeksPerPhase={WEEKS_PER_PHASE}
                 advancementStatus={advancementStatus}
                 academyLinks={currentPhaseAcademyLinks}
+                onSubmitPhaseVideo={() => {
+                  // Scroll to and open the video submission card
+                  const videoCard = document.querySelector('[data-video-submission]');
+                  videoCard?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                isAdminView={isAdmin}
               />
 
               {/* Coach Feedback Status */}

@@ -43,6 +43,8 @@ interface WeeklyDrillsCardProps {
   weeksPerPhase: number;
   advancementStatus?: AdvancementStatus;
   academyLinks?: PhaseAcademyLink[];
+  onSubmitPhaseVideo?: () => void;
+  isAdminView?: boolean;
 }
 
 export function WeeklyDrillsCard({
@@ -56,12 +58,16 @@ export function WeeklyDrillsCard({
   weeksPerPhase,
   advancementStatus,
   academyLinks,
+  onSubmitPhaseVideo,
+  isAdminView = false,
 }: WeeklyDrillsCardProps) {
   const completedCount = drills.filter((d) => isDrillCompleted(d.id)).length;
   const isLastWeek = currentWeek >= weeksPerPhase;
-  const needsPhaseTransitionVideo = isLastWeek && advancementStatus?.priorityDrillsComplete && !advancementStatus?.hasPhaseTransitionVideo;
-  const pendingReview = advancementStatus?.pendingReview;
-
+  const needsPhaseTransitionVideo = isLastWeek && advancementStatus?.priorityDrillsComplete && !advancementStatus?.hasPhaseTransitionVideo && !isAdminView;
+  const pendingReview = advancementStatus?.pendingReview && !isAdminView;
+  
+  // Admin can always advance
+  const effectiveCanAdvance = isAdminView ? true : canAdvance;
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
@@ -182,8 +188,8 @@ export function WeeklyDrillsCard({
                 You've completed all priority drills. Submit a swing video for Coach Jasha to review before advancing to the next phase.
               </p>
               <Button
-                className="mt-3 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                onClick={() => window.open("https://app.onform.io", "_blank")}
+                className="mt-3 bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={onSubmitPhaseVideo}
               >
                 <Video className="w-4 h-4 mr-2" />
                 Submit Phase Transition Video
@@ -228,7 +234,7 @@ export function WeeklyDrillsCard({
         </motion.div>
       )}
 
-      {canAdvance && (
+      {effectiveCanAdvance && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

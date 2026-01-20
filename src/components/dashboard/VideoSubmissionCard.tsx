@@ -34,8 +34,9 @@ interface VideoSubmission {
 
 interface VideoSubmissionCardProps {
   submissions: VideoSubmission[];
-  onSubmit: (file: File, title: string, description?: string) => Promise<unknown>;
+  onSubmit: (file: File, title: string, description?: string, isPhaseTransition?: boolean) => Promise<unknown>;
   isSubmitting?: boolean;
+  openOnMount?: boolean;
 }
 
 const statusConfig = {
@@ -59,8 +60,9 @@ const statusConfig = {
 export function VideoSubmissionCard({
   submissions,
   onSubmit,
+  openOnMount = false,
 }: VideoSubmissionCardProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(openOnMount);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -112,6 +114,7 @@ export function VideoSubmissionCard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="card-accent-blue p-6"
+        data-video-submission
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-xl font-bold text-foreground">

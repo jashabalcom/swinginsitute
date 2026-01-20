@@ -48,6 +48,7 @@ export default function Dashboard() {
     advanceProgress,
     submitVideo,
     PHASES,
+    PHASE_INFO,
     WEEKS_PER_PHASE,
   } = useProgressTracking();
 
@@ -185,6 +186,7 @@ export default function Dashboard() {
                 phaseProgress={phaseProgress}
                 phases={PHASES}
                 weeksPerPhase={WEEKS_PER_PHASE}
+                phaseInfo={PHASE_INFO}
               />
 
               {/* Weekly Drills */}

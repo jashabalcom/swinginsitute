@@ -203,6 +203,27 @@ export function useCurriculum() {
     return Math.round((completed / allLessons.length) * 100);
   }, [levels, canAccessLevel, isLessonCompleted]);
 
+  // Get last watched lesson (one with progress but not complete)
+  const getLastWatchedLesson = useCallback(() => {
+    const inProgressCompletions = completions
+      .filter((c) => c.watch_progress_percent > 0 && c.watch_progress_percent < 100)
+      .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime());
+    
+    if (inProgressCompletions.length === 0) return null;
+    
+    const lastCompletion = inProgressCompletions[0];
+    
+    // Find the lesson
+    for (const level of levels) {
+      for (const module of level.modules || []) {
+        const lesson = module.lessons?.find((l) => l.id === lastCompletion.lesson_id);
+        if (lesson) return lesson;
+      }
+    }
+    
+    return null;
+  }, [completions, levels]);
+
   return {
     levels,
     completions,
@@ -214,6 +235,7 @@ export function useCurriculum() {
     getLevelProgress,
     getModuleProgress,
     getTotalProgress,
+    getLastWatchedLesson,
     refetch: () => Promise.all([fetchLevels(), fetchCompletions()]),
   };
 }

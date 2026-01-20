@@ -43,11 +43,59 @@ interface PhaseProgress {
   completed_at: string | null;
 }
 
-const PHASES = [
+export interface PhaseInfo {
+  name: string;
+  shortName: string;
+  description: string;
+  icon: string;
+  focus: string[];
+}
+
+const PHASES: string[] = [
   "Phase 1: Foundation",
   "Phase 2: Power Development",
-  "Phase 3: Timing & Pitch Recognition",
+  "Phase 3: Timing & Recognition",
+  "Phase 4: Contact & Adjustment",
+  "Phase 5: Game Integration",
 ];
+
+const PHASE_INFO: Record<string, PhaseInfo> = {
+  "Phase 1: Foundation": {
+    name: "Phase 1: Foundation",
+    shortName: "Foundation",
+    description: "Build the fundamentals of an elite swing",
+    icon: "foundation",
+    focus: ["Stance & Balance", "Load Position", "Connection"]
+  },
+  "Phase 2: Power Development": {
+    name: "Phase 2: Power Development",
+    shortName: "Power",
+    description: "Develop rotational power and bat speed",
+    icon: "zap",
+    focus: ["Hip Rotation", "Separation", "Ground Force"]
+  },
+  "Phase 3: Timing & Recognition": {
+    name: "Phase 3: Timing & Recognition",
+    shortName: "Timing",
+    description: "Master pitch tracking and timing adjustments",
+    icon: "eye",
+    focus: ["Pitch Tracking", "Rhythm", "Velocity Adjustment"]
+  },
+  "Phase 4: Contact & Adjustment": {
+    name: "Phase 4: Contact & Adjustment",
+    shortName: "Contact",
+    description: "Refine barrel control and in-game adjustments",
+    icon: "target",
+    focus: ["Barrel Control", "Pitch Zones", "Situational Hitting"]
+  },
+  "Phase 5: Game Integration": {
+    name: "Phase 5: Game Integration",
+    shortName: "Integration",
+    description: "Apply skills in competitive situations",
+    icon: "trophy",
+    focus: ["At-Bat Strategy", "Mental Game", "Competition Ready"]
+  }
+};
 
 const WEEKS_PER_PHASE = 3;
 
@@ -173,6 +221,11 @@ export function useProgressTracking() {
     // Must complete all priority drills to advance
     return priorityDrills.every((d) => isDrillCompleted(d.id));
   }, [drills, currentPhase, currentWeek, isDrillCompleted]);
+
+  // Get phase info
+  const getPhaseInfo = useCallback((phase: string): PhaseInfo => {
+    return PHASE_INFO[phase] || PHASE_INFO[PHASES[0]];
+  }, []);
 
   // Advance to next week or phase
   const advanceProgress = async () => {
@@ -320,7 +373,9 @@ export function useProgressTracking() {
     advanceProgress,
     submitVideo,
     refreshData: fetchProgressData,
+    getPhaseInfo,
     PHASES,
+    PHASE_INFO,
     WEEKS_PER_PHASE,
   };
 }

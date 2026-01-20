@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle2, PlayCircle, Clock, FileText, Lock } from "lucide-react";
+import { CheckCircle2, PlayCircle, Clock, FileText, Lock, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Lesson } from "@/hooks/useCurriculum";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,8 @@ export function LessonCard({
   index,
   isLocked = false,
 }: LessonCardProps) {
+  const isInProgress = watchProgress > 0 && watchProgress < 100 && !isCompleted;
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -34,7 +37,7 @@ export function LessonCard({
       <Link
         to={isLocked ? "#" : `/academy/lesson/${lesson.id}`}
         className={cn(
-          "flex items-center gap-4 p-4 rounded-lg border transition-all duration-200",
+          "flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 group",
           isLocked
             ? "bg-muted/30 border-border/50 cursor-not-allowed opacity-60"
             : isCompleted
@@ -42,25 +45,41 @@ export function LessonCard({
             : "bg-card border-border hover:border-primary/50 hover:bg-card/80"
         )}
       >
-        {/* Status Icon */}
-        <div
-          className={cn(
-            "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
-            isLocked
-              ? "bg-muted text-muted-foreground"
-              : isCompleted
-              ? "bg-green-500/20 text-green-500"
-              : watchProgress > 0
-              ? "bg-primary/20 text-primary"
-              : "bg-muted text-muted-foreground"
+        {/* Video Thumbnail / Status Icon */}
+        <div className="relative flex-shrink-0">
+          <div
+            className={cn(
+              "w-16 h-12 rounded-lg flex items-center justify-center",
+              isLocked
+                ? "bg-muted text-muted-foreground"
+                : isCompleted
+                ? "bg-green-500/20 text-green-500"
+                : isInProgress
+                ? "bg-primary/20 text-primary"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
+            {isLocked ? (
+              <Lock className="w-5 h-5" />
+            ) : isCompleted ? (
+              <CheckCircle2 className="w-6 h-6" />
+            ) : (
+              <PlayCircle className="w-6 h-6" />
+            )}
+          </div>
+          
+          {/* Play button overlay on hover */}
+          {!isLocked && !isCompleted && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-primary/80 rounded-lg">
+              <Play className="w-5 h-5 text-white fill-white" />
+            </div>
           )}
-        >
-          {isLocked ? (
-            <Lock className="w-4 h-4" />
-          ) : isCompleted ? (
-            <CheckCircle2 className="w-5 h-5" />
-          ) : (
-            <PlayCircle className="w-5 h-5" />
+
+          {/* Duration badge */}
+          {lesson.video_duration_seconds && (
+            <span className="absolute bottom-1 right-1 text-[10px] px-1 py-0.5 rounded bg-black/70 text-white font-medium">
+              {formatDuration(lesson.video_duration_seconds)}
+            </span>
           )}
         </div>
 
@@ -81,46 +100,63 @@ export function LessonCard({
           )}
           
           {/* Meta info */}
-          <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-            {lesson.video_duration_seconds && (
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {formatDuration(lesson.video_duration_seconds)}
-              </span>
-            )}
+          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
             {lesson.worksheet_url && (
               <span className="flex items-center gap-1">
                 <FileText className="w-3 h-3" />
                 Worksheet
               </span>
             )}
-            {watchProgress > 0 && watchProgress < 100 && !isCompleted && (
-              <span className="text-primary">{watchProgress}% watched</span>
+            {isInProgress && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary rounded-full" 
+                    style={{ width: `${watchProgress}%` }}
+                  />
+                </div>
+                <span className="text-primary">{watchProgress}%</span>
+              </div>
             )}
           </div>
         </div>
 
+        {/* CTA Button */}
+        {!isLocked && (
+          <Button
+            size="sm"
+            variant={isCompleted ? "outline" : "default"}
+            className={cn(
+              "flex-shrink-0 gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity",
+              isCompleted && "text-green-600 border-green-500/30 hover:bg-green-500/10"
+            )}
+          >
+            <Play className="w-3.5 h-3.5" />
+            {isCompleted ? "Rewatch" : isInProgress ? "Continue" : "Watch"}
+          </Button>
+        )}
+
         {/* Progress indicator for in-progress lessons */}
-        {!isLocked && watchProgress > 0 && watchProgress < 100 && !isCompleted && (
-          <div className="w-12 h-12 relative">
-            <svg className="w-12 h-12 -rotate-90">
+        {!isLocked && isInProgress && (
+          <div className="w-10 h-10 relative flex-shrink-0 hidden sm:block">
+            <svg className="w-10 h-10 -rotate-90">
               <circle
-                cx="24"
-                cy="24"
-                r="20"
+                cx="20"
+                cy="20"
+                r="16"
                 stroke="currentColor"
                 strokeWidth="3"
                 fill="none"
                 className="text-muted"
               />
               <circle
-                cx="24"
-                cy="24"
-                r="20"
+                cx="20"
+                cy="20"
+                r="16"
                 stroke="currentColor"
                 strokeWidth="3"
                 fill="none"
-                strokeDasharray={`${(watchProgress / 100) * 125.6} 125.6`}
+                strokeDasharray={`${(watchProgress / 100) * 100.5} 100.5`}
                 className="text-primary"
               />
             </svg>

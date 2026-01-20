@@ -1132,6 +1132,8 @@ export type Database = {
           current_week: number | null
           feedback_frequency: string | null
           full_name: string | null
+          hybrid_credits_remaining: number | null
+          hybrid_credits_reset_date: string | null
           id: string
           is_free_tier: boolean | null
           lesson_rate: number | null
@@ -1157,6 +1159,8 @@ export type Database = {
           current_week?: number | null
           feedback_frequency?: string | null
           full_name?: string | null
+          hybrid_credits_remaining?: number | null
+          hybrid_credits_reset_date?: string | null
           id?: string
           is_free_tier?: boolean | null
           lesson_rate?: number | null
@@ -1182,6 +1186,8 @@ export type Database = {
           current_week?: number | null
           feedback_frequency?: string | null
           full_name?: string | null
+          hybrid_credits_remaining?: number | null
+          hybrid_credits_reset_date?: string | null
           id?: string
           is_free_tier?: boolean | null
           lesson_rate?: number | null

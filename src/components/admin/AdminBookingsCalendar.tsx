@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfDay, addWeeks, subWeeks, subMonths, addMonths } from "date-fns";
-import { ChevronLeft, ChevronRight, User, Clock, X } from "lucide-react";
+import { useState, useMemo } from "react";
+import { format, startOfWeek, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfDay, addWeeks, subWeeks, subMonths, addMonths, isPast, isBefore } from "date-fns";
+import { ChevronLeft, ChevronRight, User, Clock, X, CheckCircle2, AlertCircle, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import type { Booking } from "@/types/booking";
 
@@ -39,12 +40,31 @@ export function AdminBookingsCalendar({
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
+  const [showNeedsCompletion, setShowNeedsCompletion] = useState(false);
+  const [batchUpdating, setBatchUpdating] = useState(false);
 
   const today = startOfDay(new Date());
   const days = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
 
-  const getBookingsForDay = (date: Date) =>
-    bookings.filter((b) => isSameDay(new Date(b.start_time), date));
+  // Calculate sessions that need completion (past confirmed sessions)
+  const needsCompletionBookings = useMemo(() => 
+    bookings.filter(b => 
+      b.status === "confirmed" && 
+      isBefore(new Date(b.end_time), new Date())
+    ), [bookings]
+  );
+
+  const getBookingsForDay = (date: Date) => {
+    let filtered = bookings.filter((b) => isSameDay(new Date(b.start_time), date));
+    if (showNeedsCompletion) {
+      filtered = filtered.filter(b => 
+        b.status === "confirmed" && 
+        isBefore(new Date(b.end_time), new Date())
+      );
+    }
+    return filtered;
+  };
 
   const goToPreviousWeek = () => setCurrentWeekStart(subWeeks(currentWeekStart, 1));
   const goToNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
@@ -76,6 +96,36 @@ export function AdminBookingsCalendar({
 
   const monthDays = getMonthDays();
 
+  const toggleBookingSelection = (bookingId: string) => {
+    setSelectedBookings(prev => {
+      const next = new Set(prev);
+      if (next.has(bookingId)) {
+        next.delete(bookingId);
+      } else {
+        next.add(bookingId);
+      }
+      return next;
+    });
+  };
+
+  const handleBatchComplete = async () => {
+    if (selectedBookings.size === 0) return;
+    
+    setBatchUpdating(true);
+    const promises = Array.from(selectedBookings).map(id => 
+      onUpdateStatus(id, "completed")
+    );
+    
+    await Promise.all(promises);
+    setSelectedBookings(new Set());
+    setBatchUpdating(false);
+  };
+
+  const handleQuickComplete = async (bookingId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await onUpdateStatus(bookingId, "completed");
+  };
+
   const renderDayBookings = () => {
     if (!selectedDay) return null;
     const dayBookings = getBookingsForDay(selectedDay);
@@ -94,26 +144,49 @@ export function AdminBookingsCalendar({
           <p className="text-muted-foreground text-sm">No bookings for this day</p>
         ) : (
           <div className="space-y-2">
-            {dayBookings.map((booking) => (
-              <button
-                key={booking.id}
-                onClick={() => setSelectedBooking(booking)}
-                className={cn(
-                  "w-full text-left p-3 rounded-lg border text-sm transition-colors",
-                  "hover:ring-2 hover:ring-primary/20",
-                  statusColors[booking.status]
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">
-                    {format(new Date(booking.start_time), "h:mm a")} - {format(new Date(booking.end_time), "h:mm a")}
-                  </span>
-                  <Badge variant="outline" className={statusColors[booking.status]}>
-                    {booking.status}
-                  </Badge>
+            {dayBookings.map((booking) => {
+              const needsCompletion = booking.status === "confirmed" && isBefore(new Date(booking.end_time), new Date());
+              return (
+                <div
+                  key={booking.id}
+                  className={cn(
+                    "w-full text-left p-3 rounded-lg border text-sm transition-colors flex items-center gap-3",
+                    needsCompletion && "ring-2 ring-yellow-500/50",
+                    statusColors[booking.status]
+                  )}
+                >
+                  <Checkbox
+                    checked={selectedBookings.has(booking.id)}
+                    onCheckedChange={() => toggleBookingSelection(booking.id)}
+                    className="flex-shrink-0"
+                  />
+                  <button
+                    onClick={() => setSelectedBooking(booking)}
+                    className="flex-1 text-left"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">
+                        {format(new Date(booking.start_time), "h:mm a")} - {format(new Date(booking.end_time), "h:mm a")}
+                      </span>
+                      <Badge variant="outline" className={statusColors[booking.status]}>
+                        {booking.status}
+                      </Badge>
+                    </div>
+                  </button>
+                  {needsCompletion && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="flex-shrink-0 text-green-600 hover:text-green-700 hover:bg-green-100"
+                      onClick={(e) => handleQuickComplete(booking.id, e)}
+                    >
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      Complete
+                    </Button>
+                  )}
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -122,6 +195,62 @@ export function AdminBookingsCalendar({
 
   return (
     <div className="space-y-4">
+      {/* Sessions Needing Completion Alert */}
+      {needsCompletionBookings.length > 0 && (
+        <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
+            <div>
+              <span className="font-semibold text-yellow-700">
+                {needsCompletionBookings.length} session{needsCompletionBookings.length !== 1 ? "s" : ""} need completion
+              </span>
+              <span className="text-sm text-yellow-600 ml-2">
+                (Past confirmed sessions)
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowNeedsCompletion(!showNeedsCompletion)}
+            className={cn(
+              "border-yellow-500/30",
+              showNeedsCompletion && "bg-yellow-500/10"
+            )}
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            {showNeedsCompletion ? "Show All" : "Filter"}
+          </Button>
+        </div>
+      )}
+
+      {/* Batch Actions */}
+      {selectedBookings.size > 0 && (
+        <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between">
+          <span className="text-sm font-medium text-primary">
+            {selectedBookings.size} booking{selectedBookings.size !== 1 ? "s" : ""} selected
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedBookings(new Set())}
+            >
+              Clear
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleBatchComplete}
+              disabled={batchUpdating}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1" />
+              Complete Selected
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Header with View Toggle */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <ToggleGroup
@@ -210,13 +339,17 @@ export function AdminBookingsCalendar({
           {days.map((day) => {
             const dayBookings = getBookingsForDay(day);
             const isToday = isSameDay(day, today);
+            const dayNeedsCompletion = dayBookings.some(b => 
+              b.status === "confirmed" && isBefore(new Date(b.end_time), new Date())
+            );
 
             return (
               <div
                 key={day.toISOString()}
                 className={cn(
                   "min-h-[120px] p-2 border rounded-xl",
-                  isToday ? "border-primary bg-primary/5" : "border-border"
+                  isToday ? "border-primary bg-primary/5" : "border-border",
+                  dayNeedsCompletion && "ring-2 ring-yellow-500/30"
                 )}
               >
                 <div className="text-center mb-2">
@@ -234,23 +367,29 @@ export function AdminBookingsCalendar({
                 </div>
 
                 <div className="space-y-1">
-                  {dayBookings.slice(0, 3).map((booking) => (
-                    <button
-                      key={booking.id}
-                      onClick={() => setSelectedBooking(booking)}
-                      className={cn(
-                        "w-full text-left p-1.5 rounded text-xs transition-colors",
-                        "hover:ring-2 hover:ring-primary/20",
-                        booking.status === "cancelled"
-                          ? "bg-muted/50 text-muted-foreground line-through"
-                          : "bg-primary/10 text-foreground"
-                      )}
-                    >
-                      <div className="font-medium truncate">
-                        {format(new Date(booking.start_time), "h:mm a")}
-                      </div>
-                    </button>
-                  ))}
+                  {dayBookings.slice(0, 3).map((booking) => {
+                    const needsCompletion = booking.status === "confirmed" && isBefore(new Date(booking.end_time), new Date());
+                    return (
+                      <button
+                        key={booking.id}
+                        onClick={() => setSelectedBooking(booking)}
+                        className={cn(
+                          "w-full text-left p-1.5 rounded text-xs transition-colors",
+                          "hover:ring-2 hover:ring-primary/20",
+                          booking.status === "cancelled"
+                            ? "bg-muted/50 text-muted-foreground line-through"
+                            : needsCompletion
+                            ? "bg-yellow-500/20 text-yellow-700 ring-1 ring-yellow-500/30"
+                            : "bg-primary/10 text-foreground"
+                        )}
+                      >
+                        <div className="font-medium truncate flex items-center gap-1">
+                          {needsCompletion && <AlertCircle className="w-3 h-3" />}
+                          {format(new Date(booking.start_time), "h:mm a")}
+                        </div>
+                      </button>
+                    );
+                  })}
                   {dayBookings.length > 3 && (
                     <div className="text-xs text-muted-foreground text-center">
                       +{dayBookings.length - 3} more
@@ -279,6 +418,9 @@ export function AdminBookingsCalendar({
               const isToday = isSameDay(day, today);
               const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
               const isSelected = selectedDay && isSameDay(day, selectedDay);
+              const dayNeedsCompletion = dayBookings.some(b => 
+                b.status === "confirmed" && isBefore(new Date(b.end_time), new Date())
+              );
 
               return (
                 <button
@@ -289,7 +431,8 @@ export function AdminBookingsCalendar({
                     isCurrentMonth ? "bg-background" : "bg-muted/30",
                     isToday && "ring-2 ring-primary",
                     isSelected && "bg-primary/10 border-primary",
-                    !isToday && !isSelected && "border-border",
+                    dayNeedsCompletion && !isSelected && "ring-2 ring-yellow-500/30",
+                    !isToday && !isSelected && !dayNeedsCompletion && "border-border",
                     "hover:bg-accent"
                   )}
                 >
@@ -362,6 +505,14 @@ export function AdminBookingsCalendar({
                   Notes: {selectedBooking.notes}
                 </div>
               )}
+              {selectedBooking.payment_method && (
+                <div className="text-sm text-muted-foreground">
+                  Payment: <span className="capitalize">{selectedBooking.payment_method.replace("_", " ")}</span>
+                  {selectedBooking.amount_paid && selectedBooking.amount_paid > 0 && (
+                    <span className="ml-1">(${selectedBooking.amount_paid})</span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Status Actions */}
@@ -381,12 +532,13 @@ export function AdminBookingsCalendar({
               {selectedBooking.status !== "completed" && (
                 <Button
                   size="sm"
-                  variant="outline"
+                  className="bg-green-600 hover:bg-green-700"
                   onClick={() => {
                     onUpdateStatus(selectedBooking.id, "completed");
                     setSelectedBooking({ ...selectedBooking, status: "completed" });
                   }}
                 >
+                  <CheckCircle2 className="w-4 h-4 mr-1" />
                   Complete
                 </Button>
               )}

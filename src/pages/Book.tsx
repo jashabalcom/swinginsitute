@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { format, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, Package, CreditCard, Brain, Sparkles } from "lucide-react";
+import { ArrowLeft, Calendar, Package, CreditCard, Brain, Sparkles, Zap } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBooking } from "@/hooks/useBooking";
+import { useHybridCredits } from "@/hooks/useHybridCredits";
 import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { TimeSlotPicker } from "@/components/booking/TimeSlotPicker";
 import { ServiceCard } from "@/components/booking/ServiceCard";
@@ -17,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { TimeSlot } from "@/types/booking";
 
 type BookingType = "lesson" | "mindset";
+type PaymentMethod = "hybrid_credit" | "package" | "direct_pay";
 
 const BOOKING_OPTIONS = {
   lesson: {
@@ -41,6 +43,7 @@ export default function Book() {
   const { toast } = useToast();
   const { user, profile } = useAuth();
   const { packages, getAvailability, createBooking, createCheckout, loading } = useBooking();
+  const { hybridCreditsRemaining, isHybridMember, hasHybridCredits, maxHybridCredits } = useHybridCredits();
 
   const [bookingType, setBookingType] = useState<BookingType>("lesson");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -48,25 +51,31 @@ export default function Book() {
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"package" | "direct_pay">("direct_pay");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("direct_pay");
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [coachId, setCoachId] = useState<string | undefined>(undefined);
 
-  const isMember = profile?.membership_tier && profile.membership_tier !== "starter";
+  const isMember = profile?.membership_tier && !["starter", "community", null].includes(profile.membership_tier);
   const currentOption = BOOKING_OPTIONS[bookingType];
   const price = isMember ? currentOption.memberPrice : currentOption.basePrice;
+  const lessonRate = profile?.lesson_rate ?? 145;
 
   // Get total package credits
   const totalCredits = packages.reduce((sum, pkg) => sum + pkg.sessions_remaining, 0);
 
-  // Auto-select package payment if user has credits
+  // Auto-select best payment method: hybrid credits first, then packages, then direct pay
   useEffect(() => {
-    if (packages.length > 0 && !selectedPackageId) {
-      const firstPackage = packages[0];
+    if (hasHybridCredits && bookingType === "lesson") {
+      setPaymentMethod("hybrid_credit");
+      setSelectedPackageId(null);
+    } else if (packages.length > 0) {
       setPaymentMethod("package");
-      setSelectedPackageId(firstPackage.id);
+      setSelectedPackageId(packages[0].id);
+    } else {
+      setPaymentMethod("direct_pay");
+      setSelectedPackageId(null);
     }
-  }, [packages, selectedPackageId]);
+  }, [packages, hasHybridCredits, bookingType]);
 
   // Fetch the coach ID from user_roles table
   useEffect(() => {
@@ -118,7 +127,24 @@ export default function Book() {
       const startTime = new Date(`${format(selectedDate, "yyyy-MM-dd")}T${selectedSlot.startTime}:00`);
       const endTime = addMinutes(startTime, currentOption.duration);
 
-      if (paymentMethod === "package" && selectedPackageId && coachId) {
+      if (paymentMethod === "hybrid_credit" && coachId) {
+        // Book using hybrid membership credits
+        const { error } = await createBooking({
+          serviceTypeId: bookingType,
+          coachId: coachId,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          paymentMethod: "hybrid_credit",
+        });
+
+        if (error) throw new Error(error);
+
+        toast({ 
+          title: "Session booked!", 
+          description: `Membership credit used (${hybridCreditsRemaining - 1} remaining this month).` 
+        });
+        navigate("/my-bookings?success=true");
+      } else if (paymentMethod === "package" && selectedPackageId && coachId) {
         // Book using package credits
         const { error } = await createBooking({
           serviceTypeId: bookingType,
@@ -182,6 +208,16 @@ export default function Book() {
             <p className="text-muted-foreground">
               Choose your session type and schedule time with Coach Jasha
             </p>
+            
+            {/* Member Rate Badge */}
+            {isMember && (
+              <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 border border-accent/30">
+                <Sparkles className="w-4 h-4 text-accent" />
+                <span className="text-sm font-medium text-accent">
+                  Member Rate: ${lessonRate}/hr (Save ${145 - lessonRate})
+                </span>
+              </div>
+            )}
           </motion.div>
 
           <div className="grid lg:grid-cols-3 gap-8">
@@ -202,7 +238,7 @@ export default function Book() {
                     description={BOOKING_OPTIONS.lesson.description}
                     duration={BOOKING_OPTIONS.lesson.duration}
                     price={BOOKING_OPTIONS.lesson.basePrice}
-                    memberPrice={BOOKING_OPTIONS.lesson.memberPrice}
+                    memberPrice={isMember ? lessonRate : BOOKING_OPTIONS.lesson.memberPrice}
                     isMember={isMember}
                     icon={Calendar}
                     iconColor="text-primary"
@@ -268,6 +304,48 @@ export default function Book() {
                     4. Payment Method
                   </h2>
                   <div className="card-premium p-6 space-y-4">
+                    {/* Hybrid Credits Option - Only for lessons */}
+                    {isHybridMember && bookingType === "lesson" && (
+                      <button
+                        onClick={() => {
+                          setPaymentMethod("hybrid_credit");
+                          setSelectedPackageId(null);
+                        }}
+                        disabled={!hasHybridCredits}
+                        className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                          paymentMethod === "hybrid_credit"
+                            ? "border-accent bg-accent/10"
+                            : hasHybridCredits 
+                              ? "border-border hover:border-accent/50"
+                              : "border-border opacity-50 cursor-not-allowed"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-accent/20">
+                              <Zap className="w-5 h-5 text-accent" />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-foreground flex items-center gap-2">
+                                Use Membership Credit
+                                {hasHybridCredits && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent">
+                                    Recommended
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {hybridCreditsRemaining} of {maxHybridCredits} credits remaining this month
+                              </div>
+                            </div>
+                          </div>
+                          <span className="font-display text-xl font-bold text-accent">
+                            Included
+                          </span>
+                        </div>
+                      </button>
+                    )}
+
                     {/* Package Credits Option */}
                     {packages.length > 0 && (
                       <button
@@ -283,8 +361,8 @@ export default function Book() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-accent/20">
-                              <Package className="w-5 h-5 text-accent" />
+                            <div className="p-2 rounded-lg bg-primary/20">
+                              <Package className="w-5 h-5 text-primary" />
                             </div>
                             <div>
                               <div className="font-semibold text-foreground">
@@ -295,7 +373,7 @@ export default function Book() {
                               </div>
                             </div>
                           </div>
-                          <span className="font-display text-xl font-bold text-accent">
+                          <span className="font-display text-xl font-bold text-primary">
                             1 Credit
                           </span>
                         </div>
@@ -316,8 +394,8 @@ export default function Book() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/20">
-                            <CreditCard className="w-5 h-5 text-primary" />
+                          <div className="p-2 rounded-lg bg-muted">
+                            <CreditCard className="w-5 h-5 text-foreground" />
                           </div>
                           <div>
                             <div className="font-semibold text-foreground">
@@ -328,14 +406,25 @@ export default function Book() {
                             </div>
                           </div>
                         </div>
-                        <span className="font-display text-xl font-bold text-foreground">
-                          ${price}
-                        </span>
+                        <div className="text-right">
+                          {isMember && bookingType === "lesson" ? (
+                            <div>
+                              <span className="text-sm text-muted-foreground line-through">${BOOKING_OPTIONS.lesson.basePrice}</span>
+                              <span className="font-display text-xl font-bold text-foreground ml-2">
+                                ${lessonRate}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="font-display text-xl font-bold text-foreground">
+                              ${price}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </button>
 
                     {/* Upsell to packages */}
-                    {packages.length === 0 && (
+                    {packages.length === 0 && !isHybridMember && (
                       <div className="mt-4 p-4 rounded-xl bg-accent/10 border border-accent/20">
                         <div className="flex items-start gap-3">
                           <Sparkles className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
@@ -356,6 +445,29 @@ export default function Book() {
                         </div>
                       </div>
                     )}
+                    
+                    {/* Upsell to Hybrid for frequent bookers */}
+                    {!isHybridMember && packages.length > 0 && (
+                      <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20">
+                        <div className="flex items-start gap-3">
+                          <Zap className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              Upgrade to Hybrid for included sessions
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Get 1-2 in-person sessions per month included with your membership
+                            </p>
+                            <Link
+                              to="/upgrade"
+                              className="text-xs text-accent font-medium hover:underline mt-2 inline-block"
+                            >
+                              View Hybrid Plans →
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </motion.section>
               )}
@@ -371,18 +483,39 @@ export default function Book() {
                 <BookingSummary
                   serviceName={currentOption.name}
                   duration={currentOption.duration}
-                  price={price}
+                  price={paymentMethod === "hybrid_credit" ? 0 : (paymentMethod === "package" ? 0 : price)}
                   selectedDate={selectedDate}
                   selectedSlot={selectedSlot}
-                  paymentMethod={paymentMethod}
-                  packageCredits={totalCredits}
+                  paymentMethod={paymentMethod === "hybrid_credit" ? "package" : paymentMethod}
+                  packageCredits={paymentMethod === "hybrid_credit" ? hybridCreditsRemaining : totalCredits}
                   onConfirm={handleBookSession}
                   loading={bookingLoading}
                   disabled={!selectedDate || !selectedSlot}
                 />
 
+                {/* Credits Summary */}
+                {(isHybridMember || packages.length > 0) && (
+                  <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border">
+                    <h4 className="font-semibold text-foreground mb-3">Your Credits</h4>
+                    <div className="space-y-2 text-sm">
+                      {isHybridMember && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Membership Credits</span>
+                          <span className="font-medium text-accent">{hybridCreditsRemaining}/{maxHybridCredits}</span>
+                        </div>
+                      )}
+                      {packages.length > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Package Credits</span>
+                          <span className="font-medium text-primary">{totalCredits}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Quick package purchase */}
-                {packages.length === 0 && (
+                {packages.length === 0 && !isHybridMember && (
                   <div className="mt-6 text-center">
                     <Link
                       to="/packages"

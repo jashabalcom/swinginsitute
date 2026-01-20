@@ -9,6 +9,7 @@ const corsHeaders = {
 
 // Mapping of Stripe product IDs to membership tiers
 const PRODUCT_TO_TIER: Record<string, string> = {
+  "prod_TpAynmYe2OSTKN": "community",
   "prod_Tp4siVSGD0PG7k": "starter",
   "prod_Tp4sKzTi2pyda4": "pro",
   "prod_Tp4sXGo0L4c2bn": "elite",
@@ -16,12 +17,18 @@ const PRODUCT_TO_TIER: Record<string, string> = {
   "prod_Tp4t69jx1LlFu7": "hybrid-pro",
 };
 
-const TIER_CONFIG: Record<string, { lessonRate: number; monthlyCredits: number; feedbackFrequency: string }> = {
-  "starter": { lessonRate: 145, monthlyCredits: 2, feedbackFrequency: "weekly" },
-  "pro": { lessonRate: 115, monthlyCredits: 4, feedbackFrequency: "priority" },
-  "elite": { lessonRate: 115, monthlyCredits: -1, feedbackFrequency: "priority" },
-  "hybrid-core": { lessonRate: 115, monthlyCredits: 4, feedbackFrequency: "priority" },
-  "hybrid-pro": { lessonRate: 115, monthlyCredits: -1, feedbackFrequency: "priority" },
+const TIER_CONFIG: Record<string, { 
+  lessonRate: number; 
+  monthlyCredits: number; 
+  feedbackFrequency: string;
+  hybridCredits: number;
+}> = {
+  "community": { lessonRate: 145, monthlyCredits: 0, feedbackFrequency: "none", hybridCredits: 0 },
+  "starter": { lessonRate: 145, monthlyCredits: 2, feedbackFrequency: "weekly", hybridCredits: 0 },
+  "pro": { lessonRate: 115, monthlyCredits: 4, feedbackFrequency: "priority", hybridCredits: 0 },
+  "elite": { lessonRate: 115, monthlyCredits: -1, feedbackFrequency: "priority", hybridCredits: 0 },
+  "hybrid-core": { lessonRate: 115, monthlyCredits: 4, feedbackFrequency: "priority", hybridCredits: 1 },
+  "hybrid-pro": { lessonRate: 115, monthlyCredits: -1, feedbackFrequency: "priority", hybridCredits: 2 },
 };
 
 const PACKAGE_MAPPING: Record<string, { sessions: number; validityDays: number }> = {
@@ -113,6 +120,7 @@ serve(async (req) => {
 
           if (existingUserId) {
             const tierConfig = TIER_CONFIG[tier];
+            const now = new Date();
             const { error } = await supabaseAdmin.from("profiles").upsert({
               user_id: existingUserId,
               membership_tier: tier,
@@ -125,13 +133,15 @@ serve(async (req) => {
               monthly_credits: tierConfig.monthlyCredits,
               feedback_frequency: tierConfig.feedbackFrequency,
               credits_remaining: tierConfig.monthlyCredits === -1 ? 999 : tierConfig.monthlyCredits,
+              hybrid_credits_remaining: tierConfig.hybridCredits,
+              hybrid_credits_reset_date: now.toISOString(),
               is_free_tier: false,
             }, { onConflict: "user_id" });
             
             if (error) {
               logStep("Profile update error", { error: error.message });
             } else {
-              logStep("Profile updated for subscription", { tier, userId: existingUserId });
+              logStep("Profile updated for subscription", { tier, userId: existingUserId, hybridCredits: tierConfig.hybridCredits });
             }
           }
         }
@@ -182,12 +192,15 @@ serve(async (req) => {
       // Find user by stripe_customer_id
       const { data: profiles } = await supabaseAdmin
         .from("profiles")
-        .select("user_id")
+        .select("user_id, hybrid_credits_reset_date")
         .eq("stripe_customer_id", customerId)
         .limit(1);
 
       if (profiles && profiles.length > 0 && tier) {
         const tierConfig = TIER_CONFIG[tier];
+        const profile = profiles[0];
+        const now = new Date();
+        
         const updateData: Record<string, any> = {
           membership_tier: tier,
           subscription_status: subscription.status === "active" ? "active" : subscription.status,
@@ -200,17 +213,27 @@ serve(async (req) => {
         // Reset credits on renewal (new billing period)
         if (subscription.status === "active") {
           updateData.credits_remaining = tierConfig.monthlyCredits === -1 ? 999 : tierConfig.monthlyCredits;
+          
+          // Reset hybrid credits if it's a new billing period (more than 25 days since last reset)
+          const lastReset = profile.hybrid_credits_reset_date ? new Date(profile.hybrid_credits_reset_date) : null;
+          const daysSinceReset = lastReset ? (now.getTime() - lastReset.getTime()) / (1000 * 60 * 60 * 24) : 999;
+          
+          if (daysSinceReset > 25) {
+            updateData.hybrid_credits_remaining = tierConfig.hybridCredits;
+            updateData.hybrid_credits_reset_date = now.toISOString();
+            logStep("Hybrid credits reset", { userId: profile.user_id, credits: tierConfig.hybridCredits });
+          }
         }
 
         const { error } = await supabaseAdmin
           .from("profiles")
           .update(updateData)
-          .eq("user_id", profiles[0].user_id);
+          .eq("user_id", profile.user_id);
 
         if (error) {
           logStep("Subscription update error", { error: error.message });
         } else {
-          logStep("Profile updated for subscription change", { userId: profiles[0].user_id, tier });
+          logStep("Profile updated for subscription change", { userId: profile.user_id, tier });
         }
       }
     }
@@ -237,6 +260,7 @@ serve(async (req) => {
             stripe_subscription_id: null,
             monthly_credits: 0,
             credits_remaining: 0,
+            hybrid_credits_remaining: 0,
             is_free_tier: true,
           })
           .eq("user_id", profiles[0].user_id);
@@ -264,7 +288,7 @@ serve(async (req) => {
         const customerId = invoice.customer as string;
         const { data: profiles } = await supabaseAdmin
           .from("profiles")
-          .select("user_id, membership_tier, monthly_credits")
+          .select("user_id, membership_tier, monthly_credits, hybrid_credits_reset_date")
           .eq("stripe_customer_id", customerId)
           .limit(1);
 
@@ -272,12 +296,26 @@ serve(async (req) => {
           const profile = profiles[0];
           if (profile.membership_tier && TIER_CONFIG[profile.membership_tier]) {
             const tierConfig = TIER_CONFIG[profile.membership_tier];
+            const now = new Date();
+            
+            const updateData: Record<string, any> = {
+              subscription_status: "active",
+              credits_remaining: tierConfig.monthlyCredits === -1 ? 999 : tierConfig.monthlyCredits,
+            };
+            
+            // Reset hybrid credits on invoice payment (monthly renewal)
+            const lastReset = profile.hybrid_credits_reset_date ? new Date(profile.hybrid_credits_reset_date) : null;
+            const daysSinceReset = lastReset ? (now.getTime() - lastReset.getTime()) / (1000 * 60 * 60 * 24) : 999;
+            
+            if (daysSinceReset > 25 && tierConfig.hybridCredits > 0) {
+              updateData.hybrid_credits_remaining = tierConfig.hybridCredits;
+              updateData.hybrid_credits_reset_date = now.toISOString();
+              logStep("Hybrid credits reset on invoice", { userId: profile.user_id, credits: tierConfig.hybridCredits });
+            }
+            
             const { error } = await supabaseAdmin
               .from("profiles")
-              .update({
-                subscription_status: "active",
-                credits_remaining: tierConfig.monthlyCredits === -1 ? 999 : tierConfig.monthlyCredits,
-              })
+              .update(updateData)
               .eq("user_id", profile.user_id);
 
             if (error) {

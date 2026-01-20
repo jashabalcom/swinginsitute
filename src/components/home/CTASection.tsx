@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export function CTASection() {
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-card/50 to-background">
+    <section className="py-24 md:py-32 bg-gradient-to-b from-card/50 to-background">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -25,7 +25,7 @@ export function CTASection() {
             <span className="gradient-text-red">STAY OPEN FOREVER</span>
           </h2>
 
-          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
             If your child has the talent and drive — they deserve the right coaching.
             Don't let another season pass without a real plan.
           </p>
@@ -38,7 +38,7 @@ export function CTASection() {
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Link to="/train-atlanta">
+            <Link to="/book-call">
               <Button variant="outline" className="btn-secondary-outline w-full sm:w-auto text-lg px-10 py-6">
                 Book a Parent Call
               </Button>

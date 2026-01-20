@@ -11,9 +11,9 @@ const stats = [
 
 export function CommunityImpactSection() {
   return (
-    <section className="py-20 md:py-28">
+    <section className="py-24 md:py-32">
       <div className="container mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center max-w-6xl mx-auto">
           {/* Image */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -44,13 +44,13 @@ export function CommunityImpactSection() {
               1,200+ PLAYERS{" "}
               <span className="gradient-text-blue">DEVELOPED</span>
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
               From youth camps to the MLB, Coach Jasha has built a nationwide community 
               of serious players committed to elite development. The same system. 
               The same results. Available to you.
             </p>
 
-            {/* Stats Grid */}
+            {/* Stats Grid - 2026 UPGRADED with better card depth */}
             <div className="grid grid-cols-2 gap-4">
               {stats.map((stat, index) => (
                 <motion.div
@@ -59,13 +59,13 @@ export function CommunityImpactSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="card-premium p-4 text-center"
+                  className="card-premium p-5 text-center"
                 >
-                  <stat.icon className="w-6 h-6 text-secondary mx-auto mb-2" />
-                  <div className="font-display text-2xl font-bold text-foreground">
+                  <stat.icon className="w-6 h-6 text-secondary mx-auto mb-3" />
+                  <div className="font-display text-2xl lg:text-3xl font-bold text-foreground">
                     {stat.value}
                   </div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide mt-1">
                     {stat.label}
                   </div>
                 </motion.div>

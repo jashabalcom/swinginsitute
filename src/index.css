@@ -5,7 +5,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* The Swing Institute - Elite Baseball Training Platform
-   Premium dark design system with MLB-level credibility */
+   Premium dark design system with MLB-level credibility
+   2026 Design Upgrade - Enhanced contrast & readability */
 
 @layer base {
   :root {
@@ -28,9 +29,9 @@
     --secondary: 214 75% 43%; /* #1565C0 */
     --secondary-foreground: 0 0% 100%;
     
-    /* Muted */
+    /* Muted - 2026 UPGRADED for better contrast */
     --muted: 207 18% 22%; /* #2C3A47 */
-    --muted-foreground: 214 10% 67%; /* #9AA4AF */
+    --muted-foreground: 214 12% 75%; /* UPGRADED: +8% lightness for WCAG AA */
     
     /* Accent - Training Green */
     --accent: 125 47% 33%; /* #2E7D32 */
@@ -53,10 +54,10 @@
     /* Disabled */
     --disabled: 207 14% 28%; /* #3A4652 */
     
-    /* Text hierarchy */
+    /* Text hierarchy - 2026 UPGRADED */
     --text-primary: 0 0% 100%;
-    --text-secondary: 214 15% 83%; /* #D1D5DB */
-    --text-muted: 214 10% 67%; /* #9AA4AF */
+    --text-secondary: 214 15% 88%; /* UPGRADED: Better contrast */
+    --text-muted: 214 12% 75%; /* UPGRADED: Matches muted-foreground */
     
     /* Sidebar */
     --sidebar-background: 210 40% 11%;
@@ -82,7 +83,7 @@
     --secondary: 214 75% 43%;
     --secondary-foreground: 0 0% 100%;
     --muted: 207 18% 22%;
-    --muted-foreground: 214 10% 67%;
+    --muted-foreground: 214 12% 75%;
     --accent: 125 47% 33%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 70% 47%;
@@ -113,6 +114,7 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.7; /* 2026 UPGRADED: Better readability */
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -149,9 +151,27 @@
     @apply bg-card rounded-xl p-6 border-l-2 border-l-accent border border-border;
   }
   
-  /* Premium card styling */
+  /* Premium card styling - 2026 UPGRADED with depth */
   .card-premium {
-    @apply bg-card rounded-xl border border-border/50 backdrop-blur-sm;
+    @apply bg-card rounded-2xl border border-border/60 backdrop-blur-sm
+           shadow-lg shadow-black/20;
+  }
+
+  /* Elevated card - for important content - 2026 NEW */
+  .card-elevated {
+    @apply bg-card rounded-2xl border border-border/60 
+           shadow-xl shadow-black/30 ring-1 ring-white/5;
+  }
+
+  /* Subtle card - for secondary content - 2026 NEW */
+  .card-subtle {
+    @apply bg-card/50 rounded-xl border border-border/40;
+  }
+
+  /* Readable text utility - 2026 NEW */
+  .text-readable {
+    @apply leading-relaxed;
+    color: hsl(214 15% 78%);
   }
   
   /* Section headers */
@@ -160,7 +180,7 @@
   }
   
   .section-subheader {
-    @apply text-lg md:text-xl text-muted-foreground max-w-2xl;
+    @apply text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto;
   }
   
   /* Gradient text */
@@ -248,5 +268,21 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  /* Pulse glow animation for badges */
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 0 0 8px hsl(var(--primary) / 0);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }

@@ -7,6 +7,36 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper to sync with GoHighLevel
+async function syncToGHL(action: string, payload: Record<string, any>) {
+  try {
+    const ghlApiKey = Deno.env.get("GHL_API_KEY");
+    if (!ghlApiKey) {
+      console.log("[GHL] API key not configured, skipping sync");
+      return;
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const response = await fetch(`${supabaseUrl}/functions/v1/ghl-sync`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+      },
+      body: JSON.stringify({ action, ...payload }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.log(`[GHL] Sync failed: ${error}`);
+    } else {
+      console.log(`[GHL] Sync successful: ${action}`);
+    }
+  } catch (error) {
+    console.log(`[GHL] Sync error: ${error instanceof Error ? error.message : "Unknown"}`);
+  }
+}
+
 // Mapping of Stripe product IDs to membership tiers
 const PRODUCT_TO_TIER: Record<string, string> = {
   "prod_TpAynmYe2OSTKN": "community",
@@ -143,6 +173,15 @@ serve(async (req) => {
             } else {
               logStep("Profile updated for subscription", { tier, userId: existingUserId, hybridCredits: tierConfig.hybridCredits });
             }
+
+            // Sync to GoHighLevel
+            const priceAmount = subscription.items.data[0]?.price?.unit_amount;
+            await syncToGHL("sync_purchase", {
+              email: customerEmail,
+              tier,
+              amount: priceAmount ? priceAmount / 100 : 0,
+              paymentType: "subscription",
+            });
           }
         }
       }
@@ -167,6 +206,14 @@ serve(async (req) => {
               logStep("Package insert error", { error: error.message });
             } else {
               logStep("Package purchased", { userId, sessions: packageInfo.sessions });
+
+              // Sync package purchase to GoHighLevel
+              await syncToGHL("sync_purchase", {
+                email: customerEmail,
+                tier: `${packageInfo.sessions}-Pack`,
+                amount: item.amount_total ? item.amount_total / 100 : 0,
+                paymentType: "package",
+              });
             }
           }
         }

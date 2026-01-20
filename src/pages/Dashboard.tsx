@@ -17,6 +17,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useCurriculum } from "@/hooks/useCurriculum";
+import { useAdminSchedule } from "@/hooks/useAdminSchedule";
 import { PhaseProgressCard } from "@/components/dashboard/PhaseProgressCard";
 import { WeeklyDrillsCard } from "@/components/dashboard/WeeklyDrillsCard";
 import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
@@ -57,6 +58,7 @@ export default function Dashboard() {
     PHASE_INFO,
     WEEKS_PER_PHASE,
   } = useProgressTracking();
+  const { isAdmin } = useAdminSchedule();
 
   const advancementStatus = getAdvancementStatus();
   const currentPhaseAcademyLinks = getCurrentPhaseAcademyLinks();
@@ -201,6 +203,7 @@ export default function Dashboard() {
                 weeksPerPhase={WEEKS_PER_PHASE}
                 phaseInfo={PHASE_INFO}
                 phaseAcademyLinks={phaseAcademyLinks}
+                isAdminView={isAdmin}
               />
 
               {/* Weekly Drills */}

@@ -49,6 +49,7 @@ interface ProPathRoadmapProps {
   phaseInfo: Record<string, PhaseInfo>;
   phaseAcademyLinks: PhaseAcademyLink[];
   compact?: boolean;
+  isAdminView?: boolean;
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -76,6 +77,7 @@ export function ProPathRoadmap({
   phaseInfo,
   phaseAcademyLinks,
   compact = false,
+  isAdminView = false,
 }: ProPathRoadmapProps) {
   const [expandedPhase, setExpandedPhase] = useState<string | null>(currentPhase);
   const currentPhaseIndex = phases.indexOf(currentPhase);
@@ -84,6 +86,12 @@ export function ProPathRoadmap({
   const overallProgress = Math.round((completedWeeks / totalWeeks) * 100);
 
   const getPhaseStatus = (phase: string, index: number) => {
+    // Admin view: all phases are available
+    if (isAdminView) {
+      const progress = phaseProgress.find((p) => p.phase === phase);
+      if (progress?.completed_at) return "completed";
+      return "available";
+    }
     const progress = phaseProgress.find((p) => p.phase === phase);
     if (progress?.completed_at) return "completed";
     if (phase === currentPhase) return "current";
@@ -92,6 +100,12 @@ export function ProPathRoadmap({
   };
 
   const getWeekStatus = (phaseIndex: number, weekIndex: number) => {
+    // Admin view: all weeks are available
+    if (isAdminView) {
+      if (phaseIndex < currentPhaseIndex) return "completed";
+      if (phaseIndex === currentPhaseIndex && weekIndex < currentWeek - 1) return "completed";
+      return "available";
+    }
     if (phaseIndex < currentPhaseIndex) return "completed";
     if (phaseIndex === currentPhaseIndex) {
       if (weekIndex < currentWeek - 1) return "completed";
@@ -176,6 +190,15 @@ export function ProPathRoadmap({
       animate={{ opacity: 1 }}
       className="space-y-6"
     >
+      {/* Admin Coach View Banner */}
+      {isAdminView && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-4">
+          <Eye className="w-4 h-4 text-amber-500" />
+          <span className="text-sm font-medium text-amber-600">Coach Preview Mode</span>
+          <span className="text-xs text-muted-foreground">— All content unlocked</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -248,9 +271,9 @@ export function ProPathRoadmap({
                 onClick={() => setExpandedPhase(isExpanded ? null : phase)}
                 className={cn(
                   "w-full p-4 flex items-center gap-4 text-left transition-colors",
-                  status !== "locked" && "hover:bg-muted/30"
+                  (status !== "locked" || isAdminView) && "hover:bg-muted/30"
                 )}
-                disabled={status === "locked"}
+                disabled={status === "locked" && !isAdminView}
               >
                 {/* Phase Number & Icon */}
                 <div
@@ -339,7 +362,7 @@ export function ProPathRoadmap({
 
               {/* Expanded Content */}
               <AnimatePresence>
-                {isExpanded && status !== "locked" && (
+                {isExpanded && (status !== "locked" || isAdminView) && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}

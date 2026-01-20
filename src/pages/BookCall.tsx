@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { GoHighLevelCalendar } from "@/components/booking/GoHighLevelCalendar";
 import { Phone, Target, TrendingUp, MessageSquare } from "lucide-react";
+import { trackLead } from "@/lib/tracking";
 
 const PARENT_CALL_CALENDAR_ID = "xxNZzagjCWL70aXHBopO";
 
@@ -25,6 +27,11 @@ const benefits = [
 ];
 
 export default function BookCall() {
+  useEffect(() => {
+    // Track lead when user views booking page
+    trackLead("strategy_call_page");
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />

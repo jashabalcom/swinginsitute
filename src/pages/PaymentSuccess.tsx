@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackPurchase } from "@/lib/tracking";
 
 export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
@@ -19,7 +20,11 @@ export default function PaymentSuccess() {
     if (!user) {
       setIsNewUser(true);
     }
-  }, [user]);
+    
+    // Track purchase conversion
+    // Note: In production, you'd get the actual tier and price from the session
+    trackPurchase("membership", 149, sessionId || undefined);
+  }, [user, sessionId]);
 
   return (
     <div className="min-h-screen bg-background">

@@ -47,12 +47,17 @@ export default function Dashboard() {
     toggleDrillCompletion,
     getWeeklyProgress,
     canAdvance,
+    getAdvancementStatus,
     advanceProgress,
     submitVideo,
+    getCurrentPhaseAcademyLinks,
     PHASES,
     PHASE_INFO,
     WEEKS_PER_PHASE,
   } = useProgressTracking();
+
+  const advancementStatus = getAdvancementStatus();
+  const currentPhaseAcademyLinks = getCurrentPhaseAcademyLinks();
 
   const { getLastWatchedLesson, getLessonProgress } = useCurriculum();
   const lastWatchedLesson = getLastWatchedLesson();
@@ -205,6 +210,8 @@ export default function Dashboard() {
                 onAdvance={advanceProgress}
                 currentWeek={currentWeek}
                 weeksPerPhase={WEEKS_PER_PHASE}
+                advancementStatus={advancementStatus}
+                academyLinks={currentPhaseAcademyLinks}
               />
 
               {/* Coach Feedback Status */}

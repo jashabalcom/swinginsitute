@@ -49,7 +49,7 @@ export default function TrainAtlanta() {
       <Header />
       
       <main className="pt-20">
-        {/* Hero */}
+        {/* Hero - SEO Optimized for Atlanta Baseball Training */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -63,14 +63,14 @@ export default function TrainAtlanta() {
                 </div>
 
                 <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-                  TRAIN WITH
+                  ATLANTA BASEBALL
                   <br />
-                  <span className="gradient-text-red">COACH JASHA</span>
+                  <span className="gradient-text-red">HITTING LESSONS</span>
                 </h1>
 
                 <p className="text-lg text-muted-foreground mb-8 max-w-lg">
-                  Private 1-on-1 sessions at our Atlanta facility. Hands-on coaching 
-                  with real-time feedback and personalized development plans.
+                  Private 1-on-1 hitting instruction with Coach Jasha Balcom—trainer of MLB All-Star Cedric Mullins. 
+                  Perfect Game prep, travel ball development, and college showcase training in Atlanta, GA.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -108,7 +108,7 @@ export default function TrainAtlanta() {
                 <div className="rounded-2xl overflow-hidden border border-border">
                   <img
                     src={coachJasha}
-                    alt="Coach Jasha Balcom"
+                    alt="Coach Jasha Balcom - Atlanta baseball hitting coach and trainer of MLB All-Star Cedric Mullins"
                     className="w-full h-auto object-cover"
                   />
                 </div>
@@ -127,7 +127,7 @@ export default function TrainAtlanta() {
               className="max-w-3xl mx-auto"
             >
               <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-12">
-                EVERY SESSION <span className="text-secondary">INCLUDES</span>
+                EVERY PRIVATE LESSON <span className="text-secondary">INCLUDES</span>
               </h2>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -159,10 +159,10 @@ export default function TrainAtlanta() {
               className="text-center mb-12"
             >
               <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-                SESSION <span className="gradient-text-red">PACKAGES</span>
+                ATLANTA LESSON <span className="gradient-text-red">PACKAGES</span>
               </h2>
               <p className="text-muted-foreground">
-                Choose the commitment level that fits your development goals
+                In-person baseball training packages for youth, travel ball, and high school players in Atlanta, GA
               </p>
             </motion.div>
 

@@ -1,19 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, CheckCircle2, FileText, ExternalLink, PlayCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, FileText, ExternalLink } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
+import { VideoPlayer } from "@/components/academy/VideoPlayer";
 import { useCurriculum, Lesson, CurriculumModule } from "@/hooks/useCurriculum";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AcademyLesson() {
   const { lessonId } = useParams<{ lessonId: string }>();
+  const { toast } = useToast();
   const {
     levels,
     loading,
     isLessonCompleted,
     getLessonProgress,
     markLessonComplete,
+    updateLessonProgress,
     canAccessLevel,
   } = useCurriculum();
 
@@ -71,8 +75,31 @@ export default function AcademyLesson() {
   const isCompleted = isLessonCompleted(currentLesson.id);
   const progress = getLessonProgress(currentLesson.id);
 
+  const handleProgressUpdate = useCallback(
+    async (progressPercent: number) => {
+      if (currentLesson) {
+        await updateLessonProgress(currentLesson.id, progressPercent);
+      }
+    },
+    [currentLesson, updateLessonProgress]
+  );
+
+  const handleVideoComplete = useCallback(async () => {
+    if (currentLesson) {
+      await markLessonComplete(currentLesson.id, 100);
+      toast({
+        title: "Lesson Complete! 🎉",
+        description: "Great work! Your progress has been saved.",
+      });
+    }
+  }, [currentLesson, markLessonComplete, toast]);
+
   const handleMarkComplete = async () => {
     await markLessonComplete(currentLesson.id, 100);
+    toast({
+      title: "Marked as Complete",
+      description: "This lesson has been marked as complete.",
+    });
   };
 
   return (
@@ -98,21 +125,25 @@ export default function AcademyLesson() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-8"
             >
-              {currentLesson.video_url ? (
-                <div className="aspect-video bg-black rounded-xl overflow-hidden">
-                  <iframe
-                    src={currentLesson.video_url}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              ) : (
-                <div className="aspect-video bg-muted rounded-xl flex items-center justify-center">
-                  <div className="text-center">
-                    <PlayCircle className="w-16 h-16 text-muted-foreground mb-2 mx-auto" />
-                    <p className="text-muted-foreground">Video coming soon</p>
+              <VideoPlayer
+                src={currentLesson.video_url}
+                title={currentLesson.title}
+                initialProgress={progress}
+                onProgressUpdate={handleProgressUpdate}
+                onComplete={handleVideoComplete}
+                autoSaveInterval={10}
+              />
+              
+              {/* Progress indicator */}
+              {progress > 0 && progress < 100 && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    />
                   </div>
+                  <span>{progress}% watched</span>
                 </div>
               )}
             </motion.div>

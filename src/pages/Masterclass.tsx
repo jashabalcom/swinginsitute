@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Play, Clock, Users } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { VideoPlayer } from "@/components/academy/VideoPlayer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -87,21 +88,17 @@ export default function Masterclass() {
               </motion.p>
 
               {/* Video Placeholder */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
-                className="relative rounded-2xl overflow-hidden border-2 border-primary/30 bg-card aspect-video max-w-3xl mx-auto mb-12"
-              >
-                <div className="absolute inset-0 flex items-center justify-center bg-card">
-                  <div className="text-center">
-                    <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4 cursor-pointer hover:bg-primary/30 transition-colors">
-                      <Play className="w-8 h-8 text-primary ml-1" />
-                    </div>
-                    <p className="text-muted-foreground">Click to Watch the Free Masterclass</p>
-                  </div>
-                </div>
-              </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+            className="max-w-3xl mx-auto mb-12 border-2 border-primary/30 rounded-2xl overflow-hidden"
+          >
+            <VideoPlayer
+              src="https://storage.googleapis.com/msgsndr/zwZcjJjCjMcDGRS6V7qs/media/685ddbf7c8b676d8ed7d57b1.mp4"
+              title="Free Masterclass: Build a Next Level Swing"
+            />
+          </motion.div>
             </div>
           </div>
         </section>

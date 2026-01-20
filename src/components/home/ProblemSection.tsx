@@ -11,19 +11,19 @@ const problems = [
 
 export function ProblemSection() {
   return (
-    <section className="py-20 md:py-28 bg-card/50">
+    <section className="py-24 md:py-32 bg-card/50">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="max-w-3xl mx-auto text-center mb-12"
+          className="max-w-3xl mx-auto text-center mb-16"
         >
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             THE <span className="text-primary">PROBLEM</span> WITH MOST BASEBALL TRAINING
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="section-subheader">
             If your player is putting in the work but still struggling to see results,
             it's not their effort — it's the system.
           </p>
@@ -37,10 +37,10 @@ export function ProblemSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="flex items-start gap-4 py-4 border-b border-border/50 last:border-0"
+              className="flex items-start gap-4 py-5 border-b border-border/50 last:border-0"
             >
               <XCircle className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-              <span className="text-lg text-foreground/90">{problem}</span>
+              <span className="text-lg text-foreground/90 leading-relaxed">{problem}</span>
             </motion.div>
           ))}
         </div>
@@ -50,7 +50,7 @@ export function ProblemSection() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          className="text-center text-xl md:text-2xl font-display font-semibold text-foreground mt-12"
+          className="text-center text-xl md:text-2xl font-display font-semibold text-foreground mt-16"
         >
           "I'M NOT JUST BUILDING SWINGS —{" "}
           <span className="text-primary">I'M BUILDING CHAMPIONS</span>"

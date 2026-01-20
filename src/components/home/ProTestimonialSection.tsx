@@ -54,7 +54,7 @@ export function ProTestimonialSection() {
   };
 
   return (
-    <section className="py-20 md:py-28 bg-card/30">
+    <section className="py-24 md:py-32 bg-card/30">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -66,7 +66,7 @@ export function ProTestimonialSection() {
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
             WHAT THE <span className="gradient-text-red">PROS SAY</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="section-subheader">
             Hear directly from MLB All-Star Cedric Mullins about his development with Coach Jasha
           </p>
         </motion.div>
@@ -177,7 +177,7 @@ export function ProTestimonialSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mt-12"
+          className="text-center mt-16"
         >
           <blockquote className="text-xl md:text-2xl text-foreground/90 italic max-w-3xl mx-auto mb-8">
             "Cedric Mullins publicly credited Coach Jasha with teaching him how to hit at the pro level."

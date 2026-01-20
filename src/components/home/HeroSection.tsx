@@ -6,7 +6,7 @@ import coachJasha from "@/assets/coach-jasha-hero.jpg";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <section className="relative min-h-screen flex items-center pt-28 pb-12 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-card" />
       
@@ -69,20 +69,20 @@ export function HeroSection() {
               </Link>
             </div>
 
-            {/* Social Proof */}
-            <div className="flex items-center gap-8 pt-6 border-t border-border/50">
+            {/* Social Proof - 2026 UPGRADED with better spacing */}
+            <div className="flex items-center gap-6 sm:gap-8 pt-8 border-t border-border/50">
               <div>
-                <div className="font-display text-3xl font-bold text-foreground">1,200+</div>
+                <div className="font-display text-3xl sm:text-4xl font-bold text-foreground">1,200+</div>
                 <div className="text-sm text-muted-foreground">Players Trained</div>
               </div>
-              <div className="h-10 w-px bg-border" />
+              <div className="h-12 w-px bg-border/60" />
               <div>
-                <div className="font-display text-3xl font-bold text-foreground">50+</div>
+                <div className="font-display text-3xl sm:text-4xl font-bold text-foreground">50+</div>
                 <div className="text-sm text-muted-foreground">College Commits</div>
               </div>
-              <div className="h-10 w-px bg-border" />
+              <div className="h-12 w-px bg-border/60" />
               <div>
-                <div className="font-display text-3xl font-bold text-primary">MLB</div>
+                <div className="font-display text-3xl sm:text-4xl font-bold text-primary">MLB</div>
                 <div className="text-sm text-muted-foreground">Proven System</div>
               </div>
             </div>
@@ -110,10 +110,10 @@ export function HeroSection() {
                 {/* Overlay gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
                 
-                {/* Coach info overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <p className="font-display text-xl font-bold text-foreground">Coach Jasha Balcom</p>
-                  <p className="text-sm text-muted-foreground">Former Pro Player • Mentor to Hundreds • Founder</p>
+                {/* Coach info overlay - 2026 UPGRADED with better legibility */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background/90 via-background/60 to-transparent">
+                  <p className="font-display text-xl font-bold text-foreground text-shadow">Coach Jasha Balcom</p>
+                  <p className="text-sm text-foreground/80 text-shadow">Former Pro Player • Mentor to Hundreds • Founder</p>
                 </div>
               </div>
             </div>

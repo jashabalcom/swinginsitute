@@ -21,14 +21,14 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="py-20 md:py-28">
+    <section className="py-24 md:py-32">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-16 md:mb-20"
         >
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             WHAT PARENTS AND PLAYERS{" "}
@@ -37,7 +37,7 @@ export function TestimonialsSection() {
         </motion.div>
 
         {/* Testimonials Grid */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
@@ -48,7 +48,7 @@ export function TestimonialsSection() {
               className="card-premium p-6 lg:p-8 relative"
             >
               <Quote className="w-10 h-10 text-primary/20 mb-4" />
-              <blockquote className="text-foreground/90 leading-relaxed mb-6">
+              <blockquote className="text-foreground/90 leading-relaxed mb-6 text-base lg:text-lg">
                 "{testimonial.quote}"
               </blockquote>
               <div className="mt-auto">

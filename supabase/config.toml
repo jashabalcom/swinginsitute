@@ -1,1 +1,4 @@
 project_id = "zttfpvxajpnzsilbzkfl"
+
+[functions.ghl-sync]
+verify_jwt = false

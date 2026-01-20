@@ -103,13 +103,27 @@ export function useBooking() {
         // Refresh bookings and packages
         await Promise.all([fetchUserBookings(), fetchUserPackages()]);
 
+        // Sync booking to GoHighLevel (fire and forget)
+        if (user && profile) {
+          const serviceType = serviceTypes.find(s => s.id === bookingData.serviceTypeId);
+          supabase.functions.invoke("ghl-sync", {
+            body: {
+              action: "sync_booking",
+              email: user.email,
+              name: profile.full_name || profile.player_name,
+              serviceType: serviceType?.name || "Session",
+              bookingDate: bookingData.startTime,
+            },
+          }).catch(err => console.error("[GHL] Booking sync error:", err));
+        }
+
         return { booking: data?.booking, error: null };
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to create booking";
         return { booking: null, error: message };
       }
     },
-    [fetchUserBookings, fetchUserPackages]
+    [fetchUserBookings, fetchUserPackages, user, profile, serviceTypes]
   );
 
   const cancelBooking = useCallback(

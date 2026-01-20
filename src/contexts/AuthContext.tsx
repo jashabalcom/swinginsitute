@@ -128,6 +128,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           onboarding_completed: true // Skip onboarding for free tier
         })
         .eq("user_id", data.user.id);
+
+      // Sync to GoHighLevel (fire and forget)
+      supabase.functions.invoke("ghl-sync", {
+        body: {
+          action: "sync_signup",
+          email,
+          name: fullName,
+          source: "Free Signup",
+        },
+      }).catch(err => console.error("[GHL] Sync error:", err));
     }
     
     return { error };

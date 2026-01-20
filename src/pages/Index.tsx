@@ -7,6 +7,7 @@ import { CommunityImpactSection } from "@/components/home/CommunityImpactSection
 import { PricingSection } from "@/components/home/PricingSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { ProTestimonialSection } from "@/components/home/ProTestimonialSection";
+import { FAQSection } from "@/components/home/FAQSection";
 import { CTASection } from "@/components/home/CTASection";
 
 const Index = () => {
@@ -21,6 +22,7 @@ const Index = () => {
         <PricingSection />
         <TestimonialsSection />
         <ProTestimonialSection />
+        <FAQSection />
         <CTASection />
       </main>
       <Footer />

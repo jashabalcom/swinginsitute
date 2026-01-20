@@ -84,7 +84,7 @@ export default function TrainOnline() {
       <Header />
       
       <main className="pt-20">
-        {/* Hero */}
+        {/* Hero - SEO Optimized for Online Baseball Training */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <motion.div
@@ -94,24 +94,24 @@ export default function TrainOnline() {
             >
               <div className="flex items-center justify-center gap-2 text-secondary mb-4">
                 <Globe className="w-5 h-5" />
-                <span className="text-sm font-medium uppercase tracking-wide">Train From Anywhere</span>
+                <span className="text-sm font-medium uppercase tracking-wide">Online Baseball Training Program</span>
               </div>
 
               <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-                THE SWING INSTITUTE
+                ONLINE BASEBALL
                 <br />
-                <span className="gradient-text-blue">ONLINE MEMBERSHIP</span>
+                <span className="gradient-text-blue">HITTING TRAINING</span>
               </h1>
 
               <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-                Full access to the same system used to develop MLB All-Star Cedric Mullins.
-                From anywhere in the world.
+                The complete online baseball training system used to develop MLB All-Star Cedric Mullins. 
+                Video swing analysis, personalized feedback, and proven hitting curriculum—from anywhere in the world.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/checkout?tier=pro">
                   <Button className="btn-hero group">
-                    Join Now
+                    Start Training Online
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -135,7 +135,7 @@ export default function TrainOnline() {
               className="text-center mb-12"
             >
               <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-                THE <span className="text-secondary">SYSTEM</span>
+                THE ONLINE TRAINING <span className="text-secondary">SYSTEM</span>
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
                 This isn't another video course. It's a complete player development system.
@@ -173,10 +173,10 @@ export default function TrainOnline() {
               className="text-center mb-12"
             >
               <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-                CHOOSE YOUR <span className="gradient-text-red">TIER</span>
+                ONLINE MEMBERSHIP <span className="gradient-text-red">TIERS</span>
               </h2>
               <p className="text-muted-foreground">
-                Every tier includes full access to the training system
+                Monthly online baseball training memberships with video swing reviews and curriculum access
               </p>
             </motion.div>
 

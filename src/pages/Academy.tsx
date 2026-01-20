@@ -5,9 +5,14 @@ import { Header } from "@/components/layout/Header";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { LevelCard } from "@/components/academy/LevelCard";
+import { AcademyComingSoon } from "@/components/academy/AcademyComingSoon";
 import { useCurriculum } from "@/hooks/useCurriculum";
 import { useEvents } from "@/hooks/useEvents";
 import { format } from "date-fns";
+
+// Toggle this to show/hide the Coming Soon state
+// Set to true when you're ready to launch the Academy content
+const ACADEMY_CONTENT_LIVE = false;
 
 export default function Academy() {
   const { levels, loading, getLevelProgress, canAccessLevel, getTotalProgress, getLastWatchedLesson } = useCurriculum();
@@ -28,6 +33,24 @@ export default function Academy() {
     , 0) || 0)
   , 0);
   const totalHours = Math.floor(totalMinutes / 60);
+
+  // Show Coming Soon state if Academy content is not live
+  if (!ACADEMY_CONTENT_LIVE) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-20 pb-12">
+          <div className="container mx-auto px-4">
+            <AcademyComingSoon 
+              releaseDate="February 2026"
+              title="Academy Launching Soon"
+              description="We're putting the finishing touches on our comprehensive 4-level training curriculum. Get ready for the complete baseball development system."
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

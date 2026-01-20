@@ -113,22 +113,8 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/book"
-          element={
-            <ProtectedRoute>
-              <Book />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/packages"
-          element={
-            <ProtectedRoute>
-              <Packages />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/book" element={<Book />} />
+        <Route path="/packages" element={<Packages />} />
         <Route
           path="/my-bookings"
           element={

@@ -20,6 +20,12 @@ import type { TimeSlot } from "@/types/booking";
 type BookingType = "lesson" | "mindset";
 type PaymentMethod = "hybrid_credit" | "package" | "direct_pay";
 
+// Map booking type to actual service_type UUIDs from the database
+const SERVICE_TYPE_IDS: Record<BookingType, string> = {
+  lesson: "d7affa87-8c8b-43ca-a78a-f0dff75c4f0a",
+  mindset: "047d0ee4-fba5-43d5-bc1a-8d317d3da99c",
+};
+
 const BOOKING_OPTIONS = {
   lesson: {
     name: "Private Lesson",
@@ -136,7 +142,7 @@ export default function Book() {
       if (paymentMethod === "hybrid_credit" && coachId && user) {
         // Book using hybrid membership credits
         const { error } = await createBooking({
-          serviceTypeId: bookingType,
+          serviceTypeId: SERVICE_TYPE_IDS[bookingType],
           coachId: coachId,
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
@@ -153,7 +159,7 @@ export default function Book() {
       } else if (paymentMethod === "package" && selectedPackageId && coachId && user) {
         // Book using package credits
         const { error } = await createBooking({
-          serviceTypeId: bookingType,
+          serviceTypeId: SERVICE_TYPE_IDS[bookingType],
           coachId: coachId,
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
@@ -191,9 +197,12 @@ export default function Book() {
       
       <main className="pt-24 pb-12">
         <div className="container mx-auto px-4 max-w-6xl">
-          <Link to="/dashboard" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6">
+          <Link 
+            to={user ? "/dashboard" : "/train-atlanta"} 
+            className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            {user ? "Back to Dashboard" : "Back to Train Atlanta"}
           </Link>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">

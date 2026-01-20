@@ -22,6 +22,7 @@ import { TrainingHeroSection } from "@/components/dashboard/TrainingHeroSection"
 import { WeeklyTrainingCard } from "@/components/dashboard/WeeklyTrainingCard";
 import { TrainingProgressHub } from "@/components/dashboard/TrainingProgressHub";
 import { VideoSubmissionCard } from "@/components/dashboard/VideoSubmissionCard";
+import { OnFormCard } from "@/components/dashboard/OnFormCard";
 import { CoachFeedbackCard } from "@/components/dashboard/CoachFeedbackCard";
 import { NotificationBell } from "@/components/community/NotificationBell";
 import { MemberNavigation } from "@/components/dashboard/MemberNavigation";
@@ -203,6 +204,9 @@ export default function Dashboard() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
+              {/* OnForm - Primary Video Tool */}
+              <OnFormCard />
+
               {/* Weekly Training */}
               <WeeklyTrainingCard
                 drills={drills}
@@ -225,10 +229,11 @@ export default function Dashboard() {
                 feedbackFrequency={profile?.feedback_frequency || "weekly"}
               />
 
-              {/* Video Submissions */}
+              {/* Video Submissions - Alternative Option */}
               <VideoSubmissionCard
                 submissions={submissions}
                 onSubmit={submitVideo}
+                isAlternative
               />
             </div>
 

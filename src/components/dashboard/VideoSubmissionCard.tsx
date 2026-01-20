@@ -37,6 +37,7 @@ interface VideoSubmissionCardProps {
   onSubmit: (file: File, title: string, description?: string, isPhaseTransition?: boolean) => Promise<unknown>;
   isSubmitting?: boolean;
   openOnMount?: boolean;
+  isAlternative?: boolean;
 }
 
 const statusConfig = {
@@ -61,6 +62,7 @@ export function VideoSubmissionCard({
   submissions,
   onSubmit,
   openOnMount = false,
+  isAlternative = false,
 }: VideoSubmissionCardProps) {
   const [isOpen, setIsOpen] = useState(openOnMount);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -117,9 +119,16 @@ export function VideoSubmissionCard({
         data-video-submission
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-xl font-bold text-foreground">
-            Swing Videos
-          </h2>
+          <div>
+            <h2 className="font-display text-xl font-bold text-foreground">
+              {isAlternative ? "Quick Upload" : "Swing Videos"}
+            </h2>
+            {isAlternative && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Alternative option • For best analysis, use OnForm
+              </p>
+            )}
+          </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="bg-primary hover:bg-primary/90">

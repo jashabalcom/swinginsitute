@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, Phone, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,7 +19,40 @@ export function Header() {
   const { user } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
+    <header className="fixed top-0 left-0 right-0 z-50">
+      {/* Utility Bar */}
+      <div className="bg-card border-b border-border/50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-9 text-sm">
+            {/* Phone & Location */}
+            <div className="flex items-center gap-4">
+              <a 
+                href="tel:7707620990" 
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">(770) 762-0990</span>
+              </a>
+              <div className="hidden md:flex items-center gap-1.5 text-muted-foreground">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Atlanta, GA</span>
+              </div>
+            </div>
+            
+            {/* Book a Call CTA */}
+            <Link 
+              to="/book-call" 
+              className="flex items-center gap-1.5 text-primary hover:text-primary/80 font-medium transition-colors"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Book a Parent Call</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main Header */}
+      <div className="bg-background/95 backdrop-blur-md border-b border-border/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -77,6 +110,7 @@ export function Header() {
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
+      </div>
       </div>
 
       {/* Mobile Menu */}

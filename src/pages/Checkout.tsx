@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { MEMBERSHIP_TIERS, type MembershipTier } from "@/config/stripe";
 import { toast } from "sonner";
+import { trackInitiateCheckout } from "@/lib/tracking";
 
 export default function Checkout() {
   const [searchParams] = useSearchParams();
@@ -31,7 +32,10 @@ export default function Checkout() {
       setCanceled(true);
       toast.error("Checkout was canceled. Please try again.");
     }
-  }, [user, searchParams]);
+    
+    // Track checkout initiation
+    trackInitiateCheckout(selectedTier.name, selectedTier.price);
+  }, [user, searchParams, selectedTier.name, selectedTier.price]);
 
   const handleCheckout = async () => {
     if (!email) {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { trackSignup } from "@/lib/tracking";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 export default function Signup() {
@@ -31,6 +32,9 @@ export default function Signup() {
         variant: "destructive",
       });
     } else {
+      // Track successful signup
+      trackSignup("email");
+      
       toast({
         title: "Welcome to the Swing Institute!",
         description: "Your account has been created. Redirecting to dashboard...",

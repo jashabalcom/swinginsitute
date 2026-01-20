@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
 import { MobileCTABar } from "@/components/layout/MobileCTABar";
+import { FacebookPixel } from "@/components/tracking/FacebookPixel";
+import { GoogleAnalytics } from "@/components/tracking/GoogleAnalytics";
 import Index from "./pages/Index";
 import Masterclass from "./pages/Masterclass";
 import TrainAtlanta from "./pages/TrainAtlanta";
@@ -34,6 +36,7 @@ import AdminDrills from "./pages/AdminDrills";
 import AdminAcademy from "./pages/AdminAcademy";
 import Settings from "./pages/Settings";
 import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 import Checkout from "./pages/Checkout";
@@ -57,6 +60,8 @@ function AppContent() {
 
   return (
     <AuthProvider>
+      <FacebookPixel />
+      <GoogleAnalytics />
       {showMobileCTA && <MobileCTABar />}
       <Routes>
         <Route path="/" element={<Index />} />
@@ -68,6 +73,7 @@ function AppContent() {
         <Route path="/book-call" element={<BookCall />} />
         <Route path="/book-mindset" element={<BookMindset />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/cookies" element={<Cookies />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />

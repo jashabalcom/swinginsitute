@@ -19,6 +19,8 @@ import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";
 import TrainingRoom from "./pages/TrainingRoom";
 import Book from "./pages/Book";
+import BookCall from "./pages/BookCall";
+import BookMindset from "./pages/BookMindset";
 import Packages from "./pages/Packages";
 import MyBookings from "./pages/MyBookings";
 import AdminSchedule from "./pages/AdminSchedule";
@@ -59,6 +61,8 @@ const App = () => (
             <Route path="/train-online" element={<TrainOnline />} />
             <Route path="/hybrid" element={<Hybrid />} />
             <Route path="/about" element={<About />} />
+            <Route path="/book-call" element={<BookCall />} />
+            <Route path="/book-mindset" element={<BookMindset />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/checkout" element={<Checkout />} />

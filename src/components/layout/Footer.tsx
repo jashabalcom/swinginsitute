@@ -10,6 +10,11 @@ const footerLinks = {
     { name: "Hybrid Program", href: "/hybrid" },
     { name: "Free Masterclass", href: "/masterclass" },
   ],
+  getStarted: [
+    { name: "Book a Free Call", href: "/book-call" },
+    { name: "Mindset Coaching", href: "/book-mindset" },
+    { name: "View Packages", href: "/packages" },
+  ],
   resources: [
     { name: "About Coach Jasha", href: "/about" },
     { name: "Success Stories", href: "/about#success" },
@@ -70,6 +75,25 @@ export function Footer() {
             </h4>
             <ul className="space-y-3">
               {footerLinks.training.map((link) => (
+                <li key={link.name}>
+                  <Link
+                    to={link.href}
+                    className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Get Started */}
+          <div>
+            <h4 className="font-display text-lg font-semibold text-foreground mb-4 uppercase tracking-wide">
+              Get Started
+            </h4>
+            <ul className="space-y-3">
+              {footerLinks.getStarted.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}

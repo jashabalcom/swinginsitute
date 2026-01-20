@@ -86,7 +86,7 @@ export function useBooking() {
       coachId: string;
       startTime: string;
       endTime: string;
-      paymentMethod: "credits" | "package" | "direct_pay";
+      paymentMethod: "credits" | "package" | "direct_pay" | "hybrid_credit";
       purchasedPackageId?: string;
       amountPaid?: number;
       stripePaymentId?: string;

@@ -21,7 +21,7 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
       {/* Utility Bar */}
-      <div className="bg-card border-b border-border/50">
+      <div className="bg-card/80 backdrop-blur-sm border-b border-border/50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-9 text-sm">
             {/* Phone & Location */}
@@ -42,10 +42,11 @@ export function Header() {
             {/* Book a Call CTA */}
             <Link 
               to="/book-call" 
-              className="flex items-center gap-1.5 text-primary hover:text-primary/80 font-medium transition-colors"
+              className="flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors px-3 py-1 rounded-full"
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Book a Parent Call</span>
+              <span className="hidden sm:inline">Book a Parent Call</span>
+              <span className="sm:hidden">Book Call</span>
             </Link>
           </div>
         </div>
@@ -122,17 +123,40 @@ export function Header() {
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden bg-card border-t border-border"
           >
-            <nav className="container mx-auto px-6 py-8 flex flex-col space-y-5">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="nav-link py-3"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
+            <nav className="container mx-auto px-6 py-6 flex flex-col space-y-4">
+              {/* Phone Number Row */}
+              <a 
+                href="tel:7707620990" 
+                className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                <Phone className="w-4 h-4" />
+                <span>(770) 762-0990</span>
+              </a>
+              
+              {/* Book a Call CTA */}
+              <Link 
+                to="/book-call" 
+                className="flex items-center justify-center gap-2 bg-primary/10 text-primary font-medium py-3 rounded-lg"
+                onClick={() => setIsOpen(false)}
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Book a Parent Call</span>
+              </Link>
+              
+              <div className="border-t border-border/50 pt-4">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className="nav-link py-3 block"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+              
               <div className="pt-4 border-t border-border flex flex-col space-y-3">
                 {user ? (
                   <>

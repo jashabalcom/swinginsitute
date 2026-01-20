@@ -24,6 +24,7 @@ import { CoachFeedbackCard } from "@/components/dashboard/CoachFeedbackCard";
 import { NotificationBell } from "@/components/community/NotificationBell";
 import { MemberNavigation } from "@/components/dashboard/MemberNavigation";
 import { ContinueWatchingWidget } from "@/components/dashboard/ContinueWatchingWidget";
+import { ProPathRoadmap } from "@/components/dashboard/ProPathRoadmap";
 
 
 const tierBadgeColors: Record<string, string> = {
@@ -40,6 +41,7 @@ export default function Dashboard() {
     drills,
     submissions,
     phaseProgress,
+    phaseAcademyLinks,
     loading: progressLoading,
     currentPhase,
     currentWeek,
@@ -190,14 +192,15 @@ export default function Dashboard() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Phase Progress */}
-              <PhaseProgressCard
+              {/* Pro Path Roadmap */}
+              <ProPathRoadmap
                 currentPhase={currentPhase}
                 currentWeek={currentWeek}
                 phaseProgress={phaseProgress}
                 phases={PHASES}
                 weeksPerPhase={WEEKS_PER_PHASE}
                 phaseInfo={PHASE_INFO}
+                phaseAcademyLinks={phaseAcademyLinks}
               />
 
               {/* Weekly Drills */}

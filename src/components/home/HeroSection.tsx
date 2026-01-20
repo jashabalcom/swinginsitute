@@ -77,8 +77,8 @@ export function HeroSection() {
               </div>
               <div className="h-10 w-px bg-border" />
               <div>
-                <div className="font-display text-3xl font-bold text-foreground">$145</div>
-                <div className="text-sm text-muted-foreground">Per Session</div>
+                <div className="font-display text-3xl font-bold text-foreground">50+</div>
+                <div className="text-sm text-muted-foreground">College Commits</div>
               </div>
               <div className="h-10 w-px bg-border" />
               <div>

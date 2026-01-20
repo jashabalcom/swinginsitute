@@ -8,6 +8,8 @@ import {
   ArrowRight,
   KeyRound,
   Loader2,
+  CreditCard,
+  ExternalLink,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
@@ -57,6 +59,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(null);
 
   // Form state
@@ -165,6 +168,29 @@ export default function Settings() {
   const handleAvatarChange = (url: string | null) => {
     setCurrentAvatarUrl(url);
     refreshProfile();
+  };
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      } else {
+        throw new Error("No portal URL returned");
+      }
+    } catch (error) {
+      console.error("Error opening customer portal:", error);
+      toast({
+        title: "Unable to open subscription portal",
+        description: error instanceof Error ? error.message : "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalLoading(false);
+    }
   };
 
   if (loading || !isOnboardingComplete) {
@@ -385,6 +411,29 @@ export default function Settings() {
                   {profile?.feedback_frequency || "Weekly"}
                 </span>
               </div>
+
+              {/* Manage Subscription - only show for paid members */}
+              {profile?.subscription_status === "active" && profile?.stripe_customer_id && (
+                <div className="pt-6 border-t border-border">
+                  <Button
+                    variant="outline"
+                    onClick={handleManageSubscription}
+                    disabled={portalLoading}
+                    className="w-full border-border hover:bg-muted"
+                  >
+                    {portalLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <CreditCard className="w-4 h-4 mr-2" />
+                    )}
+                    Manage Subscription
+                    <ExternalLink className="w-3 h-3 ml-2" />
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Update payment method, change plan, or cancel
+                  </p>
+                </div>
+              )}
 
               {tier !== "elite" && (
                 <div className="pt-6 border-t border-border">

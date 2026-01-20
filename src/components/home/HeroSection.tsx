@@ -69,23 +69,61 @@ export function HeroSection() {
               </Link>
             </div>
 
-            {/* Social Proof - 2026 UPGRADED with better spacing */}
-            <div className="flex items-center gap-6 sm:gap-8 pt-8 border-t border-border/50">
-              <div>
-                <div className="font-display text-3xl sm:text-4xl font-bold text-foreground">1,200+</div>
+            {/* Social Proof - 2026 UPGRADED with micro-animations */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-center gap-6 sm:gap-8 pt-8 border-t border-border/50"
+            >
+              <motion.div 
+                whileHover={{ scale: 1.05, y: -2 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="cursor-default"
+              >
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  className="font-display text-3xl sm:text-4xl font-bold text-foreground"
+                >
+                  1,200+
+                </motion.div>
                 <div className="text-sm text-muted-foreground">Players Trained</div>
-              </div>
+              </motion.div>
               <div className="h-12 w-px bg-border/60" />
-              <div>
-                <div className="font-display text-3xl sm:text-4xl font-bold text-foreground">50+</div>
+              <motion.div 
+                whileHover={{ scale: 1.05, y: -2 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="cursor-default"
+              >
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                  className="font-display text-3xl sm:text-4xl font-bold text-foreground"
+                >
+                  50+
+                </motion.div>
                 <div className="text-sm text-muted-foreground">College Commits</div>
-              </div>
+              </motion.div>
               <div className="h-12 w-px bg-border/60" />
-              <div>
-                <div className="font-display text-3xl sm:text-4xl font-bold text-primary">MLB</div>
+              <motion.div 
+                whileHover={{ scale: 1.05, y: -2 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                className="cursor-default"
+              >
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                  className="font-display text-3xl sm:text-4xl font-bold text-primary"
+                >
+                  MLB
+                </motion.div>
                 <div className="text-sm text-muted-foreground">Proven System</div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </motion.div>
 
           {/* Right - Coach Image */}

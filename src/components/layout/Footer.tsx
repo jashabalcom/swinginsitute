@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Phone, MapPin } from "lucide-react";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -63,9 +64,21 @@ export function Footer() {
             <p className="mt-4 text-muted-foreground text-sm leading-relaxed">
               Elite baseball development. Build a championship swing and unshakeable confidence.
             </p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Atlanta, GA
-            </p>
+            
+            {/* Contact Info */}
+            <div className="mt-6 space-y-3">
+              <a 
+                href="tel:7707620990" 
+                className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm"
+              >
+                <Phone className="w-4 h-4" />
+                <span>(770) 762-0990</span>
+              </a>
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <MapPin className="w-4 h-4" />
+                <span>Atlanta, GA</span>
+              </div>
+            </div>
           </div>
 
           {/* Training Links */}

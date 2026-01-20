@@ -151,12 +151,17 @@ export function useBooking() {
   );
 
   const createCheckout = useCallback(
-    async (priceId: string, mode: "payment" | "subscription" = "payment") => {
+    async (
+      priceId: string, 
+      mode: "payment" | "subscription" = "payment",
+      customerEmail?: string
+    ) => {
       try {
         const { data, error } = await supabase.functions.invoke("create-checkout", {
           body: {
             priceId,
             mode,
+            customerEmail,
             successUrl: `${window.location.origin}/my-bookings?success=true`,
             cancelUrl: `${window.location.origin}/packages?canceled=true`,
           },

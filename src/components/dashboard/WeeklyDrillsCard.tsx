@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, Play, ChevronRight } from "lucide-react";
+import { CheckCircle2, Circle, ChevronRight, Video, Clock, AlertCircle, BookOpen } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { AdvancementStatus } from "@/hooks/useProgressTracking";
 
 interface Drill {
   id: string;
@@ -9,6 +11,25 @@ interface Drill {
   description: string | null;
   is_priority: boolean;
   duration_minutes: number;
+}
+
+interface PhaseAcademyLink {
+  id: string;
+  phase: string;
+  level_id: string | null;
+  module_id: string | null;
+  description: string | null;
+  level?: {
+    id: string;
+    title: string;
+    slug: string;
+    icon: string | null;
+  };
+  module?: {
+    id: string;
+    title: string;
+    slug: string;
+  };
 }
 
 interface WeeklyDrillsCardProps {
@@ -20,6 +41,8 @@ interface WeeklyDrillsCardProps {
   onAdvance: () => void;
   currentWeek: number;
   weeksPerPhase: number;
+  advancementStatus?: AdvancementStatus;
+  academyLinks?: PhaseAcademyLink[];
 }
 
 export function WeeklyDrillsCard({
@@ -31,8 +54,13 @@ export function WeeklyDrillsCard({
   onAdvance,
   currentWeek,
   weeksPerPhase,
+  advancementStatus,
+  academyLinks,
 }: WeeklyDrillsCardProps) {
   const completedCount = drills.filter((d) => isDrillCompleted(d.id)).length;
+  const isLastWeek = currentWeek >= weeksPerPhase;
+  const needsPhaseTransitionVideo = isLastWeek && advancementStatus?.priorityDrillsComplete && !advancementStatus?.hasPhaseTransitionVideo;
+  const pendingReview = advancementStatus?.pendingReview;
 
   return (
     <motion.section
@@ -56,6 +84,31 @@ export function WeeklyDrillsCard({
       </div>
 
       <Progress value={progressPercent} className="h-2 mb-6" />
+
+      {/* Academy Links for Current Phase */}
+      {academyLinks && academyLinks.length > 0 && (
+        <div className="mb-6 p-4 bg-secondary/5 border border-secondary/20 rounded-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <BookOpen className="w-4 h-4 text-secondary" />
+            <span className="text-sm font-medium text-foreground">Related Academy Content</span>
+          </div>
+          <div className="space-y-2">
+            {academyLinks.map((link) => (
+              <Link
+                key={link.id}
+                to={link.level?.slug ? `/academy/${link.level.slug}` : '/academy'}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-secondary transition-colors"
+              >
+                <ChevronRight className="w-3 h-3" />
+                <span>{link.level?.title || link.module?.title}</span>
+                {link.description && (
+                  <span className="text-xs text-muted-foreground/60">— {link.description}</span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <ul className="space-y-3">
         {drills.map((drill) => {
@@ -111,6 +164,69 @@ export function WeeklyDrillsCard({
           );
         })}
       </ul>
+
+      {/* Phase Transition Video Required */}
+      {needsPhaseTransitionVideo && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-6 p-4 bg-secondary/10 border border-secondary/20 rounded-lg"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+              <Video className="w-5 h-5 text-secondary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-foreground">Ready for Phase Advancement!</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                You've completed all priority drills. Submit a swing video for Coach Jasha to review before advancing to the next phase.
+              </p>
+              <Button
+                className="mt-3 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                onClick={() => window.open("https://app.onform.io", "_blank")}
+              >
+                <Video className="w-4 h-4 mr-2" />
+                Submit Phase Transition Video
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Pending Coach Review */}
+      {pendingReview && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <Clock className="w-5 h-5 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-foreground">Awaiting Coach Review</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your phase transition video is being reviewed by Coach Jasha. You'll be notified when approved to advance.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Blocked Reason */}
+      {advancementStatus?.blockedReason && !needsPhaseTransitionVideo && !pendingReview && !canAdvance && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-6 p-3 bg-muted/50 border border-border rounded-lg"
+        >
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <AlertCircle className="w-4 h-4" />
+            <span>{advancementStatus.blockedReason}</span>
+          </div>
+        </motion.div>
+      )}
 
       {canAdvance && (
         <motion.div

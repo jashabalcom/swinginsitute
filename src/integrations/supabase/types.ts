@@ -833,6 +833,51 @@ export type Database = {
           },
         ]
       }
+      phase_academy_links: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          level_id: string | null
+          module_id: string | null
+          phase: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          level_id?: string | null
+          module_id?: string | null
+          phase: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          level_id?: string | null
+          module_id?: string | null
+          phase?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phase_academy_links_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phase_academy_links_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phase_progress: {
         Row: {
           completed_at: string | null
@@ -1318,9 +1363,11 @@ export type Database = {
       }
       video_submissions: {
         Row: {
+          approved_for_advancement: boolean | null
           coach_feedback: string | null
           description: string | null
           id: string
+          is_phase_transition: boolean | null
           phase: string
           reviewed_at: string | null
           status: string
@@ -1332,9 +1379,11 @@ export type Database = {
           week: number
         }
         Insert: {
+          approved_for_advancement?: boolean | null
           coach_feedback?: string | null
           description?: string | null
           id?: string
+          is_phase_transition?: boolean | null
           phase: string
           reviewed_at?: string | null
           status?: string
@@ -1346,9 +1395,11 @@ export type Database = {
           week: number
         }
         Update: {
+          approved_for_advancement?: boolean | null
           coach_feedback?: string | null
           description?: string | null
           id?: string
+          is_phase_transition?: boolean | null
           phase?: string
           reviewed_at?: string | null
           status?: string

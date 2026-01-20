@@ -34,6 +34,8 @@ interface VideoSubmission {
   week: number;
   submitted_at: string;
   reviewed_at: string | null;
+  is_phase_transition?: boolean;
+  approved_for_advancement?: boolean;
 }
 
 interface PhaseProgress {
@@ -43,12 +45,33 @@ interface PhaseProgress {
   completed_at: string | null;
 }
 
+interface PhaseAcademyLink {
+  id: string;
+  phase: string;
+  level_id: string | null;
+  module_id: string | null;
+  description: string | null;
+  sort_order: number;
+  level?: {
+    id: string;
+    title: string;
+    slug: string;
+    icon: string | null;
+  };
+  module?: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+}
+
 export interface PhaseInfo {
   name: string;
   shortName: string;
   description: string;
   icon: string;
   focus: string[];
+  academyLinks?: PhaseAcademyLink[];
 }
 
 const PHASES: string[] = [
@@ -99,6 +122,16 @@ const PHASE_INFO: Record<string, PhaseInfo> = {
 
 const WEEKS_PER_PHASE = 3;
 
+export interface AdvancementStatus {
+  canAdvanceWeek: boolean;
+  canAdvancePhase: boolean;
+  priorityDrillsComplete: boolean;
+  hasPhaseTransitionVideo: boolean;
+  phaseVideoApproved: boolean;
+  pendingReview: boolean;
+  blockedReason: string | null;
+}
+
 export function useProgressTracking() {
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
@@ -107,6 +140,7 @@ export function useProgressTracking() {
   const [completions, setCompletions] = useState<DrillCompletion[]>([]);
   const [submissions, setSubmissions] = useState<VideoSubmission[]>([]);
   const [phaseProgress, setPhaseProgress] = useState<PhaseProgress[]>([]);
+  const [phaseAcademyLinks, setPhaseAcademyLinks] = useState<PhaseAcademyLink[]>([]);
   const [loading, setLoading] = useState(true);
 
   const currentPhase = profile?.current_phase || PHASES[0];
@@ -118,7 +152,7 @@ export function useProgressTracking() {
     
     setLoading(true);
     try {
-      const [drillsRes, completionsRes, submissionsRes, progressRes] = await Promise.all([
+      const [drillsRes, completionsRes, submissionsRes, progressRes, linksRes] = await Promise.all([
         supabase
           .from("drills")
           .select("*")
@@ -138,6 +172,14 @@ export function useProgressTracking() {
           .from("phase_progress")
           .select("*")
           .eq("user_id", user.id),
+        supabase
+          .from("phase_academy_links")
+          .select(`
+            *,
+            level:curriculum_levels(id, title, slug, icon),
+            module:curriculum_modules(id, title, slug)
+          `)
+          .order("sort_order"),
       ]);
 
       if (drillsRes.data) setDrills(drillsRes.data);
@@ -146,6 +188,7 @@ export function useProgressTracking() {
         setSubmissions(submissionsRes.data as VideoSubmission[]);
       }
       if (progressRes.data) setPhaseProgress(progressRes.data);
+      if (linksRes.data) setPhaseAcademyLinks(linksRes.data as PhaseAcademyLink[]);
     } catch (error) {
       console.error("Error fetching progress data:", error);
     } finally {
@@ -211,34 +254,91 @@ export function useProgressTracking() {
     return Math.round((completedCount / weekDrills.length) * 100);
   }, [drills, currentPhase, currentWeek, isDrillCompleted]);
 
-  // Check if ready to advance to next week/phase
-  const canAdvance = useCallback(() => {
+  // Get advancement status with detailed breakdown
+  const getAdvancementStatus = useCallback((): AdvancementStatus => {
     const weekDrills = drills.filter(
       (d) => d.phase === currentPhase && d.week === currentWeek
     );
     const priorityDrills = weekDrills.filter((d) => d.is_priority);
+    const priorityDrillsComplete = priorityDrills.every((d) => isDrillCompleted(d.id));
     
-    // Must complete all priority drills to advance
-    return priorityDrills.every((d) => isDrillCompleted(d.id));
-  }, [drills, currentPhase, currentWeek, isDrillCompleted]);
+    const isLastWeek = currentWeek >= WEEKS_PER_PHASE;
+    
+    // For phase transitions, check for approved video submission
+    const phaseTransitionSubmission = submissions.find(
+      (s) => s.phase === currentPhase && s.week === WEEKS_PER_PHASE && s.is_phase_transition
+    );
+    
+    const hasPhaseTransitionVideo = !!phaseTransitionSubmission;
+    const phaseVideoApproved = phaseTransitionSubmission?.approved_for_advancement === true;
+    const pendingReview = hasPhaseTransitionVideo && !phaseVideoApproved && phaseTransitionSubmission?.status === "pending";
+    
+    let blockedReason: string | null = null;
+    
+    if (!priorityDrillsComplete) {
+      blockedReason = "Complete all priority drills to advance";
+    } else if (isLastWeek && !hasPhaseTransitionVideo) {
+      blockedReason = "Submit a swing video for coach review to advance to the next phase";
+    } else if (isLastWeek && pendingReview) {
+      blockedReason = "Waiting for coach approval on your phase transition video";
+    } else if (isLastWeek && !phaseVideoApproved) {
+      blockedReason = "Coach review required before phase advancement";
+    }
+    
+    return {
+      canAdvanceWeek: priorityDrillsComplete && !isLastWeek,
+      canAdvancePhase: priorityDrillsComplete && isLastWeek && phaseVideoApproved,
+      priorityDrillsComplete,
+      hasPhaseTransitionVideo,
+      phaseVideoApproved,
+      pendingReview,
+      blockedReason,
+    };
+  }, [drills, currentPhase, currentWeek, isDrillCompleted, submissions]);
 
-  // Get phase info
+  // Legacy canAdvance for backward compatibility
+  const canAdvance = useCallback(() => {
+    const status = getAdvancementStatus();
+    return status.canAdvanceWeek || status.canAdvancePhase;
+  }, [getAdvancementStatus]);
+
+  // Get phase info with academy links
   const getPhaseInfo = useCallback((phase: string): PhaseInfo => {
-    return PHASE_INFO[phase] || PHASE_INFO[PHASES[0]];
-  }, []);
+    const baseInfo = PHASE_INFO[phase] || PHASE_INFO[PHASES[0]];
+    const links = phaseAcademyLinks.filter((l) => l.phase === phase);
+    return {
+      ...baseInfo,
+      academyLinks: links,
+    };
+  }, [phaseAcademyLinks]);
+
+  // Get academy links for current phase
+  const getCurrentPhaseAcademyLinks = useCallback(() => {
+    return phaseAcademyLinks.filter((l) => l.phase === currentPhase);
+  }, [phaseAcademyLinks, currentPhase]);
 
   // Advance to next week or phase
   const advanceProgress = async () => {
-    if (!user || !canAdvance()) return;
+    if (!user) return;
+    
+    const status = getAdvancementStatus();
+    if (!status.canAdvanceWeek && !status.canAdvancePhase) {
+      toast({
+        title: "Cannot Advance",
+        description: status.blockedReason || "Requirements not met",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       let newWeek = currentWeek;
       let newPhase = currentPhase;
 
-      if (currentWeek < WEEKS_PER_PHASE) {
+      if (status.canAdvanceWeek) {
         // Advance to next week
         newWeek = currentWeek + 1;
-      } else {
+      } else if (status.canAdvancePhase) {
         // Advance to next phase
         const currentPhaseIndex = PHASES.indexOf(currentPhase);
         if (currentPhaseIndex < PHASES.length - 1) {
@@ -303,8 +403,13 @@ export function useProgressTracking() {
     }
   };
 
-  // Submit a swing video
-  const submitVideo = async (file: File, title: string, description?: string) => {
+  // Submit a swing video (with phase transition flag)
+  const submitVideo = async (
+    file: File, 
+    title: string, 
+    description?: string,
+    isPhaseTransition: boolean = false
+  ) => {
     if (!user) return;
 
     try {
@@ -331,6 +436,7 @@ export function useProgressTracking() {
           video_url: urlData.publicUrl,
           phase: currentPhase,
           week: currentWeek,
+          is_phase_transition: isPhaseTransition,
         })
         .select()
         .single();
@@ -342,8 +448,10 @@ export function useProgressTracking() {
       }
 
       toast({
-        title: "Video Submitted!",
-        description: "Coach Jasha will review your swing soon.",
+        title: isPhaseTransition ? "Phase Transition Video Submitted!" : "Video Submitted!",
+        description: isPhaseTransition 
+          ? "Coach Jasha will review and approve your advancement."
+          : "Coach Jasha will review your swing soon.",
       });
 
       return data;
@@ -363,6 +471,7 @@ export function useProgressTracking() {
     completions,
     submissions,
     phaseProgress,
+    phaseAcademyLinks,
     loading,
     currentPhase,
     currentWeek,
@@ -370,10 +479,12 @@ export function useProgressTracking() {
     toggleDrillCompletion,
     getWeeklyProgress,
     canAdvance,
+    getAdvancementStatus,
     advanceProgress,
     submitVideo,
     refreshData: fetchProgressData,
     getPhaseInfo,
+    getCurrentPhaseAcademyLinks,
     PHASES,
     PHASE_INFO,
     WEEKS_PER_PHASE,

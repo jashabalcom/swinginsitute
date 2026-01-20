@@ -233,7 +233,7 @@ export default function Hybrid() {
                 find the right plan for your family.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/masterclass">
+                <Link to="/book-call">
                   <Button className="btn-hero group">
                     Book a Parent Call
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

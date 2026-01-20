@@ -126,16 +126,22 @@ export function useCurriculum() {
     [completions]
   );
 
-  const markLessonComplete = useCallback(
-    async (lessonId: string, progressPercent: number = 100) => {
+  const updateLessonProgress = useCallback(
+    async (lessonId: string, progressPercent: number) => {
       if (!user) return;
 
       const existing = completions.find((c) => c.lesson_id === lessonId);
 
       if (existing) {
+        // Only update if new progress is greater
+        if (progressPercent <= existing.watch_progress_percent) return;
+        
         const { error } = await supabase
           .from("lesson_completions")
-          .update({ watch_progress_percent: progressPercent, completed_at: new Date().toISOString() })
+          .update({ 
+            watch_progress_percent: progressPercent,
+            completed_at: progressPercent >= 90 ? new Date().toISOString() : existing.completed_at
+          })
           .eq("id", existing.id);
 
         if (!error) {
@@ -152,6 +158,7 @@ export function useCurriculum() {
             user_id: user.id,
             lesson_id: lessonId,
             watch_progress_percent: progressPercent,
+            completed_at: progressPercent >= 90 ? new Date().toISOString() : null,
           })
           .select()
           .single();
@@ -162,6 +169,13 @@ export function useCurriculum() {
       }
     },
     [user, completions]
+  );
+
+  const markLessonComplete = useCallback(
+    async (lessonId: string, progressPercent: number = 100) => {
+      await updateLessonProgress(lessonId, progressPercent);
+    },
+    [updateLessonProgress]
   );
 
   const canAccessLevel = useCallback(
@@ -231,6 +245,7 @@ export function useCurriculum() {
     isLessonCompleted,
     getLessonProgress,
     markLessonComplete,
+    updateLessonProgress,
     canAccessLevel,
     getLevelProgress,
     getModuleProgress,

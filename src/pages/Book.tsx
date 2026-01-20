@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { format, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, Package, CreditCard, Brain, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, Calendar, Package, CreditCard, Brain, Sparkles, Zap, Mail } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBooking } from "@/hooks/useBooking";
@@ -15,6 +17,13 @@ import { ServiceCard } from "@/components/booking/ServiceCard";
 import { BookingSummary } from "@/components/booking/BookingSummary";
 import { STRIPE_PRICES } from "@/config/stripe";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { TimeSlot } from "@/types/booking";
 
 type BookingType = "lesson" | "mindset";
@@ -60,6 +69,9 @@ export default function Book() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("direct_pay");
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [coachId, setCoachId] = useState<string | undefined>(undefined);
+  const [guestEmail, setGuestEmail] = useState("");
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   const isMember = profile?.membership_tier && !["starter", "community", null].includes(profile.membership_tier);
   const currentOption = BOOKING_OPTIONS[bookingType];
@@ -124,13 +136,29 @@ export default function Book() {
     setSelectedSlot(null);
   }, [bookingType]);
 
-  const handleBookSession = async () => {
+  const handleBookSession = async (emailOverride?: string) => {
     if (!selectedDate || !selectedSlot) return;
 
     // For credit-based payments, require login
     if ((paymentMethod === "hybrid_credit" || paymentMethod === "package") && !user) {
       navigate(`/login?redirect=${encodeURIComponent('/book')}`);
       return;
+    }
+
+    // For guest direct pay, require email
+    if (paymentMethod === "direct_pay" && !user) {
+      const emailToUse = emailOverride || guestEmail;
+      if (!emailToUse) {
+        setShowEmailDialog(true);
+        return;
+      }
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailToUse)) {
+        setEmailError("Please enter a valid email address");
+        setShowEmailDialog(true);
+        return;
+      }
     }
 
     setBookingLoading(true);
@@ -173,7 +201,8 @@ export default function Book() {
         navigate("/my-bookings?success=true");
       } else {
         // Pay directly via Stripe (works for guests and logged-in users)
-        const { url, error } = await createCheckout(STRIPE_PRICES.SINGLE_LESSON.priceId, "payment");
+        const customerEmail = user?.email || guestEmail || emailOverride;
+        const { url, error } = await createCheckout(STRIPE_PRICES.SINGLE_LESSON.priceId, "payment", customerEmail);
         if (error) throw new Error(error);
         if (url) window.location.href = url;
       }
@@ -186,6 +215,17 @@ export default function Book() {
     } finally {
       setBookingLoading(false);
     }
+  };
+
+  const handleEmailSubmit = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!guestEmail || !emailRegex.test(guestEmail)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    setEmailError("");
+    setShowEmailDialog(false);
+    handleBookSession(guestEmail);
   };
 
   // Guest mode: Allow viewing but redirect credit-based payments to login
@@ -534,6 +574,67 @@ export default function Book() {
           </div>
         </div>
       </main>
+
+      {/* Guest Email Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-primary" />
+              Enter Your Email
+            </DialogTitle>
+            <DialogDescription>
+              We'll send your booking confirmation and receipt to this email address.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="guest-email">Email Address</Label>
+              <Input
+                id="guest-email"
+                type="email"
+                placeholder="you@example.com"
+                value={guestEmail}
+                onChange={(e) => {
+                  setGuestEmail(e.target.value);
+                  setEmailError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleEmailSubmit();
+                  }
+                }}
+                className={emailError ? "border-destructive" : ""}
+              />
+              {emailError && (
+                <p className="text-sm text-destructive">{emailError}</p>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowEmailDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleEmailSubmit}
+                disabled={bookingLoading}
+                className="flex-1"
+              >
+                {bookingLoading ? "Processing..." : "Continue to Payment"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Already have an account?{" "}
+              <Link to={`/login?redirect=${encodeURIComponent('/book')}`} className="text-primary hover:underline">
+                Log in
+              </Link>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

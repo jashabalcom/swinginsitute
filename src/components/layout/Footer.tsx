@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
-import { useAdminSchedule } from "@/hooks/useAdminSchedule";
+import { supabase } from "@/integrations/supabase/client";
 
 const footerLinks = {
   training: [
@@ -21,7 +22,25 @@ const footerLinks = {
 };
 
 export function Footer() {
-  const { isAdmin } = useAdminSchedule();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      setIsAdmin(!!data);
+    };
+    
+    checkAdmin();
+  }, []);
 
   return (
     <footer className="bg-card border-t border-border">

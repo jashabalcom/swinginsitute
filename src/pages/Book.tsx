@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { format, addMinutes } from "date-fns";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, Package, CreditCard, Brain } from "lucide-react";
+import { ArrowLeft, Calendar, Package, CreditCard, Brain, Sparkles } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBooking } from "@/hooks/useBooking";
 import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { TimeSlotPicker } from "@/components/booking/TimeSlotPicker";
-import { UserPackageCard } from "@/components/booking/UserPackageCard";
+import { ServiceCard } from "@/components/booking/ServiceCard";
+import { BookingSummary } from "@/components/booking/BookingSummary";
 import { STRIPE_PRICES } from "@/config/stripe";
 import { supabase } from "@/integrations/supabase/client";
 import type { TimeSlot } from "@/types/booking";
@@ -23,7 +24,7 @@ const BOOKING_OPTIONS = {
     duration: 60,
     basePrice: 145,
     memberPrice: 115,
-    description: "60-minute swing session with Coach Jasha",
+    description: "60-minute swing session with video analysis and personalized drills",
   },
   mindset: {
     name: "Mindset Coaching",
@@ -54,6 +55,18 @@ export default function Book() {
   const isMember = profile?.membership_tier && profile.membership_tier !== "starter";
   const currentOption = BOOKING_OPTIONS[bookingType];
   const price = isMember ? currentOption.memberPrice : currentOption.basePrice;
+
+  // Get total package credits
+  const totalCredits = packages.reduce((sum, pkg) => sum + pkg.sessions_remaining, 0);
+
+  // Auto-select package payment if user has credits
+  useEffect(() => {
+    if (packages.length > 0 && !selectedPackageId) {
+      const firstPackage = packages[0];
+      setPaymentMethod("package");
+      setSelectedPackageId(firstPackage.id);
+    }
+  }, [packages, selectedPackageId]);
 
   // Fetch the coach ID from user_roles table
   useEffect(() => {
@@ -156,148 +169,230 @@ export default function Book() {
       <Header />
       
       <main className="pt-24 pb-12">
-        <div className="container mx-auto px-4 max-w-4xl">
+        <div className="container mx-auto px-4 max-w-6xl">
           <Link to="/dashboard" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Link>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
               Book a Session
             </h1>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground">
               Choose your session type and schedule time with Coach Jasha
             </p>
-
-            {/* Booking Type Selector */}
-            <div className="flex gap-4 mb-8">
-              <button
-                onClick={() => setBookingType("lesson")}
-                className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                  bookingType === "lesson"
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-6 h-6 text-primary" />
-                  <div className="text-left">
-                    <div className="font-semibold text-foreground">Private Lesson</div>
-                    <div className="text-sm text-muted-foreground">
-                      60 min • ${isMember ? 115 : 145}
-                      {isMember && <span className="text-primary ml-1">(Member)</span>}
-                    </div>
-                  </div>
-                </div>
-              </button>
-              <button
-                onClick={() => setBookingType("mindset")}
-                className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                  bookingType === "mindset"
-                    ? "border-primary bg-primary/10"
-                    : "border-border hover:border-primary/50"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Brain className="w-6 h-6 text-secondary" />
-                  <div className="text-left">
-                    <div className="font-semibold text-foreground">Mindset Coaching</div>
-                    <div className="text-sm text-muted-foreground">30 min • $75</div>
-                  </div>
-                </div>
-              </button>
-            </div>
           </motion.div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Calendar & Time Selection */}
+            {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              <div className="card-premium p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-xl font-semibold">Select Date</h2>
-                </div>
-                <BookingCalendar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
-              </div>
-
-              {selectedDate && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-premium p-6">
-                  <TimeSlotPicker
-                    slots={slots}
-                    selectedSlot={selectedSlot}
-                    onSelectSlot={setSelectedSlot}
-                    loading={loadingSlots}
+              {/* Service Selection */}
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+                  1. Choose Your Session
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <ServiceCard
+                    name={BOOKING_OPTIONS.lesson.name}
+                    description={BOOKING_OPTIONS.lesson.description}
+                    duration={BOOKING_OPTIONS.lesson.duration}
+                    price={BOOKING_OPTIONS.lesson.basePrice}
+                    memberPrice={BOOKING_OPTIONS.lesson.memberPrice}
+                    isMember={isMember}
+                    icon={Calendar}
+                    iconColor="text-primary"
+                    selected={bookingType === "lesson"}
+                    onClick={() => setBookingType("lesson")}
                   />
-                </motion.div>
-              )}
-            </div>
+                  <ServiceCard
+                    name={BOOKING_OPTIONS.mindset.name}
+                    description={BOOKING_OPTIONS.mindset.description}
+                    duration={BOOKING_OPTIONS.mindset.duration}
+                    price={BOOKING_OPTIONS.mindset.basePrice}
+                    memberPrice={BOOKING_OPTIONS.mindset.memberPrice}
+                    isMember={isMember}
+                    icon={Brain}
+                    iconColor="text-secondary"
+                    selected={bookingType === "mindset"}
+                    onClick={() => setBookingType("mindset")}
+                  />
+                </div>
+              </motion.section>
 
-            {/* Payment Options */}
-            <div className="space-y-6">
-              {packages.length > 0 && (
+              {/* Calendar Selection */}
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+                  2. Select Date
+                </h2>
                 <div className="card-premium p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Package className="w-5 h-5 text-primary" />
-                    <h2 className="font-display text-lg font-semibold">Your Packages</h2>
+                  <BookingCalendar selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+                </div>
+              </motion.section>
+
+              {/* Time Selection */}
+              {selectedDate && (
+                <motion.section
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+                    3. Pick a Time
+                  </h2>
+                  <div className="card-premium p-6">
+                    <TimeSlotPicker
+                      slots={slots}
+                      selectedSlot={selectedSlot}
+                      onSelectSlot={setSelectedSlot}
+                      loading={loadingSlots}
+                    />
                   </div>
-                  <div className="space-y-4">
-                    {packages.map((pkg) => (
+                </motion.section>
+              )}
+
+              {/* Payment Method (only show when date and slot selected) */}
+              {selectedDate && selectedSlot && (
+                <motion.section
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+                    4. Payment Method
+                  </h2>
+                  <div className="card-premium p-6 space-y-4">
+                    {/* Package Credits Option */}
+                    {packages.length > 0 && (
                       <button
-                        key={pkg.id}
                         onClick={() => {
                           setPaymentMethod("package");
-                          setSelectedPackageId(pkg.id);
+                          setSelectedPackageId(packages[0].id);
                         }}
-                        className={`w-full text-left p-3 rounded-lg border transition-all ${
-                          selectedPackageId === pkg.id
+                        className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                          paymentMethod === "package"
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50"
                         }`}
                       >
-                        <div className="font-medium">{pkg.sessions_remaining} credits</div>
-                        <div className="text-sm text-muted-foreground">
-                          Expires {format(new Date(pkg.expires_at), "MMM d")}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-accent/20">
+                              <Package className="w-5 h-5 text-accent" />
+                            </div>
+                            <div>
+                              <div className="font-semibold text-foreground">
+                                Use Package Credit
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {totalCredits} credit{totalCredits !== 1 ? "s" : ""} available
+                              </div>
+                            </div>
+                          </div>
+                          <span className="font-display text-xl font-bold text-accent">
+                            1 Credit
+                          </span>
                         </div>
                       </button>
-                    ))}
+                    )}
+
+                    {/* Direct Pay Option */}
+                    <button
+                      onClick={() => {
+                        setPaymentMethod("direct_pay");
+                        setSelectedPackageId(null);
+                      }}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                        paymentMethod === "direct_pay"
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-primary/20">
+                            <CreditCard className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-foreground">
+                              Pay Now
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {currentOption.name} - {currentOption.duration} min
+                            </div>
+                          </div>
+                        </div>
+                        <span className="font-display text-xl font-bold text-foreground">
+                          ${price}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Upsell to packages */}
+                    {packages.length === 0 && (
+                      <div className="mt-4 p-4 rounded-xl bg-accent/10 border border-accent/20">
+                        <div className="flex items-start gap-3">
+                          <Sparkles className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              Save up to $145 with a package
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Get our 6-Session Pack for just $121/lesson
+                            </p>
+                            <Link
+                              to="/packages"
+                              className="text-xs text-primary font-medium hover:underline mt-2 inline-block"
+                            >
+                              View Packages →
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
+                </motion.section>
               )}
+            </div>
 
-              <div className="card-premium p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <CreditCard className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-lg font-semibold">Payment</h2>
-                </div>
+            {/* Sidebar - Booking Summary */}
+            <div className="lg:col-span-1">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <BookingSummary
+                  serviceName={currentOption.name}
+                  duration={currentOption.duration}
+                  price={price}
+                  selectedDate={selectedDate}
+                  selectedSlot={selectedSlot}
+                  paymentMethod={paymentMethod}
+                  packageCredits={totalCredits}
+                  onConfirm={handleBookSession}
+                  loading={bookingLoading}
+                  disabled={!selectedDate || !selectedSlot}
+                />
 
-                <button
-                  onClick={() => {
-                    setPaymentMethod("direct_pay");
-                    setSelectedPackageId(null);
-                  }}
-                  className={`w-full text-left p-3 rounded-lg border transition-all mb-4 ${
-                    paymentMethod === "direct_pay"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div className="font-medium">Pay ${price}</div>
-                  <div className="text-sm text-muted-foreground">{currentOption.name} - {currentOption.duration} min</div>
-                </button>
-
-                <Button
-                  onClick={handleBookSession}
-                  disabled={!selectedDate || !selectedSlot || bookingLoading}
-                  className="w-full bg-primary hover:bg-primary/90"
-                >
-                  {bookingLoading ? "Processing..." : "Confirm Booking"}
-                </Button>
-
-                <Link to="/packages" className="block mt-4 text-center text-sm text-primary hover:underline">
-                  Buy a package and save →
-                </Link>
-              </div>
+                {/* Quick package purchase */}
+                {packages.length === 0 && (
+                  <div className="mt-6 text-center">
+                    <Link
+                      to="/packages"
+                      className="text-sm text-primary hover:underline font-medium"
+                    >
+                      Buy a package and save →
+                    </Link>
+                  </div>
+                )}
+              </motion.div>
             </div>
           </div>
         </div>

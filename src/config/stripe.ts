@@ -32,22 +32,11 @@ export const STRIPE_PRICES = {
     validityDays: 180,
     savings: 145,
   },
-  PACKAGE_12: {
-    priceId: "price_1SrOkCBMMWTvlQ8Ho9nuxziM",
-    productId: "prod_Tp2pUYu4EmGjeu",
-    name: "12-Lesson Package",
-    basePrice: 1305,
-    memberPrice: 1145,
-    sessions: 12,
-    validityDays: 365,
-    savings: 435,
-  },
 } as const;
 
 export const LESSON_PACKAGES = [
   STRIPE_PRICES.PACKAGE_3,
   STRIPE_PRICES.PACKAGE_6,
-  STRIPE_PRICES.PACKAGE_12,
 ];
 
 // Service type constants

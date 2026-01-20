@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Package } from "lucide-react";
+import { ArrowLeft, Package, Sparkles, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBooking } from "@/hooks/useBooking";
-import { PackageCard } from "@/components/booking/PackageCard";
 import { UserPackageCard } from "@/components/booking/UserPackageCard";
-import { LESSON_PACKAGES } from "@/config/stripe";
+import { LESSON_PACKAGES, STRIPE_PRICES } from "@/config/stripe";
+import { Button } from "@/components/ui/button";
 
 export default function Packages() {
   const { toast } = useToast();
@@ -30,6 +30,30 @@ export default function Packages() {
     if (url) window.location.href = url;
   };
 
+  // All packages including single
+  const allPackages = [
+    {
+      ...STRIPE_PRICES.SINGLE_LESSON,
+      savings: 0,
+      validityDays: 30,
+      perSession: STRIPE_PRICES.SINGLE_LESSON.basePrice,
+      popular: false,
+      isSingle: true,
+    },
+    {
+      ...STRIPE_PRICES.PACKAGE_3,
+      perSession: Math.round(STRIPE_PRICES.PACKAGE_3.basePrice / 3),
+      popular: false,
+      isSingle: false,
+    },
+    {
+      ...STRIPE_PRICES.PACKAGE_6,
+      perSession: Math.round(STRIPE_PRICES.PACKAGE_6.basePrice / 6),
+      popular: true,
+      isSingle: false,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -46,7 +70,7 @@ export default function Packages() {
               Lesson Packages
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Save on private lessons with our packages. Credits never expire while your package is active.
+              Save on private lessons with our packages. The more you commit, the more you save.
             </p>
           </motion.div>
 
@@ -65,27 +89,127 @@ export default function Packages() {
             </motion.section>
           )}
 
-          {/* Available Packages */}
+          {/* Comparison Table */}
           <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <h2 className="font-display text-2xl font-bold text-foreground mb-6">
-              Available Packages
+              Choose Your Package
             </h2>
+            
             <div className="grid md:grid-cols-3 gap-6">
-              {LESSON_PACKAGES.map((pkg, index) => (
-                <PackageCard
-                  key={pkg.priceId}
-                  name={pkg.name}
-                  sessions={pkg.sessions}
-                  basePrice={pkg.basePrice}
-                  memberPrice={pkg.memberPrice}
-                  savings={pkg.savings}
-                  validityDays={pkg.validityDays}
-                  isMember={isMember}
-                  onPurchase={() => handlePurchase(pkg.priceId)}
-                  popular={index === 1}
-                />
-              ))}
+              {allPackages.map((pkg, index) => {
+                const price = isMember ? pkg.memberPrice : pkg.basePrice;
+                const perSession = isMember 
+                  ? Math.round(pkg.memberPrice / pkg.sessions)
+                  : pkg.perSession;
+                
+                return (
+                  <motion.div
+                    key={pkg.priceId}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={`relative rounded-2xl border p-6 flex flex-col ${
+                      pkg.popular
+                        ? "border-primary bg-card glow-red"
+                        : "border-border bg-card/50"
+                    }`}
+                  >
+                    {pkg.popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span className="bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider px-4 py-1 rounded-full flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          Best Value
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="mb-4">
+                      <h3 className="font-display text-xl font-bold text-foreground mb-1">
+                        {pkg.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {pkg.sessions} {pkg.sessions === 1 ? "session" : "sessions"}
+                      </p>
+                    </div>
+
+                    <div className="mb-4">
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-display text-3xl font-bold text-foreground">
+                          ${price}
+                        </span>
+                        {isMember && !pkg.isSingle && (
+                          <span className="text-sm text-muted-foreground line-through ml-2">
+                            ${pkg.basePrice}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        ${perSession}/session
+                      </p>
+                    </div>
+
+                    {pkg.savings > 0 && (
+                      <div className="mb-4">
+                        <span className="inline-block bg-accent/20 text-accent text-sm font-semibold px-3 py-1 rounded-full">
+                          Save ${pkg.savings}
+                        </span>
+                      </div>
+                    )}
+
+                    <ul className="space-y-2 mb-6 flex-1">
+                      <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Check className="w-4 h-4 text-accent flex-shrink-0" />
+                        <span>Valid for {pkg.validityDays} days</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Check className="w-4 h-4 text-accent flex-shrink-0" />
+                        <span>60-min private sessions</span>
+                      </li>
+                      {pkg.sessions >= 3 && (
+                        <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Check className="w-4 h-4 text-accent flex-shrink-0" />
+                          <span>Priority booking</span>
+                        </li>
+                      )}
+                      {pkg.sessions >= 6 && (
+                        <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Check className="w-4 h-4 text-accent flex-shrink-0" />
+                          <span>Progress tracking</span>
+                        </li>
+                      )}
+                    </ul>
+
+                    <Button
+                      onClick={() => handlePurchase(pkg.priceId)}
+                      className={`w-full ${
+                        pkg.popular
+                          ? "bg-primary hover:bg-primary/90"
+                          : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
+                      }`}
+                    >
+                      {pkg.sessions === 1 ? "Book Session" : "Buy Package"}
+                    </Button>
+                  </motion.div>
+                );
+              })}
             </div>
+
+            {/* Member discount note */}
+            {!isMember && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-8 text-center"
+              >
+                <p className="text-sm text-muted-foreground">
+                  <Link to="/upgrade" className="text-primary hover:underline font-medium">
+                    Become a member
+                  </Link>
+                  {" "}to unlock discounted rates on all packages
+                </p>
+              </motion.div>
+            )}
           </motion.section>
         </div>
       </main>

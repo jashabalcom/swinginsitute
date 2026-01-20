@@ -18,25 +18,28 @@ const packages = [
   {
     name: "Single Session",
     price: "$145",
+    perSession: "$145/session",
     sessions: "1 session",
     description: "Perfect for assessment or specific issue focus",
     popular: false,
   },
   {
-    name: "4-Session Pack",
-    price: "$520",
-    sessions: "4 sessions",
+    name: "3-Session Pack",
+    price: "$400",
+    perSession: "$133/session",
+    sessions: "3 sessions",
     description: "Build momentum with consistent training",
-    savings: "Save $60",
-    popular: true,
+    savings: "Save $35",
+    popular: false,
   },
   {
-    name: "8-Session Pack",
-    price: "$960",
-    sessions: "8 sessions",
-    description: "Serious development commitment",
-    savings: "Save $200",
-    popular: false,
+    name: "6-Session Pack",
+    price: "$725",
+    perSession: "$121/session",
+    sessions: "6 sessions",
+    description: "Best value for serious development",
+    savings: "Save $145",
+    popular: true,
   },
 ];
 
@@ -71,7 +74,7 @@ export default function TrainAtlanta() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                  <Link to="/packages">
+                  <Link to="/book">
                     <Button className="btn-hero group">
                       Book Your Session
                       <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -188,11 +191,12 @@ export default function TrainAtlanta() {
                   <h3 className="font-display text-xl font-bold text-foreground mb-2">
                     {pkg.name}
                   </h3>
-                  <div className="flex items-baseline gap-1 mb-2">
+                  <div className="flex items-baseline gap-1 mb-1">
                     <span className="font-display text-3xl font-bold text-foreground">
                       {pkg.price}
                     </span>
                   </div>
+                  <p className="text-sm text-muted-foreground mb-2">{pkg.perSession}</p>
                   <p className="text-sm text-muted-foreground mb-4">{pkg.sessions}</p>
                   {pkg.savings && (
                     <span className="inline-block bg-accent/20 text-accent text-xs font-semibold px-2 py-1 rounded mb-4">
@@ -200,7 +204,7 @@ export default function TrainAtlanta() {
                     </span>
                   )}
                   <p className="text-sm text-muted-foreground mb-6">{pkg.description}</p>
-                  <Link to="/packages" className="w-full block">
+                  <Link to="/book" className="w-full block">
                     <Button
                       className={`w-full ${
                         pkg.popular

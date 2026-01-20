@@ -15,9 +15,12 @@ export default function Upgrade() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [selectedTier, setSelectedTier] = useState<MembershipTier>(
-    (searchParams.get("tier") as MembershipTier) || "pro"
+    (searchParams.get("tier") as MembershipTier) || "starter"
   );
   const [isLoading, setIsLoading] = useState(false);
+
+  // Order tiers for display: community, starter, pro, elite
+  const tierOrder: MembershipTier[] = ["community", "starter", "pro", "elite"];
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -55,8 +58,8 @@ export default function Upgrade() {
     }
   };
 
-  const tiers = (Object.keys(MEMBERSHIP_TIERS) as MembershipTier[]).filter(
-    (t) => !t.includes("hybrid")
+  const tiers = tierOrder.filter(
+    (t) => !t.includes("hybrid") && MEMBERSHIP_TIERS[t]
   );
 
   return (
@@ -94,10 +97,11 @@ export default function Upgrade() {
               </motion.div>
 
               {/* Tier Selection */}
-              <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {tiers.map((tier, index) => {
                   const tierData = MEMBERSHIP_TIERS[tier];
                   const isSelected = selectedTier === tier;
+                  const isCommunity = tier === "community";
                   
                   return (
                     <motion.button
@@ -106,7 +110,7 @@ export default function Upgrade() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       onClick={() => setSelectedTier(tier)}
-                      className={`relative p-6 rounded-2xl border-2 text-left transition-all ${
+                      className={`relative p-5 rounded-2xl border-2 text-left transition-all ${
                         isSelected
                           ? "border-secondary bg-secondary/5"
                           : "border-border hover:border-muted-foreground/50"
@@ -117,21 +121,26 @@ export default function Upgrade() {
                           Most Popular
                         </span>
                       )}
+                      {isCommunity && (
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-muted text-muted-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                          Entry Level
+                        </span>
+                      )}
                       
-                      <h3 className="font-display text-xl font-bold mb-1">
+                      <h3 className="font-display text-lg font-bold mb-1">
                         {tierData.name}
                       </h3>
-                      <div className="flex items-baseline gap-1 mb-4">
-                        <span className="font-display text-3xl font-bold">
+                      <div className="flex items-baseline gap-1 mb-3">
+                        <span className="font-display text-2xl font-bold">
                           ${tierData.price}
                         </span>
-                        <span className="text-muted-foreground">/mo</span>
+                        <span className="text-muted-foreground text-sm">/mo</span>
                       </div>
                       
-                      <ul className="space-y-2">
-                        {tierData.features.slice(0, 3).map((feature, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm">
-                            <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                      <ul className="space-y-1.5">
+                        {tierData.features.slice(0, isCommunity ? 4 : 3).map((feature, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs">
+                            <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${
                               isSelected ? "text-secondary" : "text-muted-foreground"
                             }`} />
                             <span className="text-muted-foreground">{feature}</span>
@@ -140,8 +149,8 @@ export default function Upgrade() {
                       </ul>
                       
                       {isSelected && (
-                        <div className="absolute top-4 right-4">
-                          <CheckCircle2 className="w-6 h-6 text-secondary" />
+                        <div className="absolute top-3 right-3">
+                          <CheckCircle2 className="w-5 h-5 text-secondary" />
                         </div>
                       )}
                     </motion.button>

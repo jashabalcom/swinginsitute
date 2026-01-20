@@ -17,7 +17,6 @@ const achievements = [
 const stats = [
   { number: "1,200+", label: "Players Trained" },
   { number: "MLB", label: "Pro System" },
-  { number: "$145", label: "Session Rate" },
   { number: "100%", label: "Results-Focused" },
 ];
 

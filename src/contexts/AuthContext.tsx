@@ -24,6 +24,8 @@ interface Profile {
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   subscription_end_date: string | null;
+  hybrid_credits_remaining: number | null;
+  hybrid_credits_reset_date: string | null;
 }
 
 interface AuthContextType {

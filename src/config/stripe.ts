@@ -49,6 +49,23 @@ export const SERVICE_TYPES = {
 
 // Membership tier configuration
 export const MEMBERSHIP_TIERS = {
+  community: {
+    name: "Community",
+    priceId: "price_1SrWckBMMWTvlQ8HUb8t1fG5",
+    productId: "prod_TpAynmYe2OSTKN",
+    price: 49,
+    swingReviews: 0,
+    feedbackTime: null,
+    lessonRate: 145,
+    inPersonCredits: 0,
+    features: [
+      "Full Training Room access",
+      "Post, comment, and react",
+      "Direct messaging with members",
+      "Events calendar access",
+      "Monthly workshops",
+    ],
+  },
   starter: {
     name: "Starter",
     priceId: "price_1SrQj8BMMWTvlQ8HaxQbr9aC",
@@ -57,6 +74,7 @@ export const MEMBERSHIP_TIERS = {
     swingReviews: 2,
     feedbackTime: "72hr",
     lessonRate: 145,
+    inPersonCredits: 0,
     features: [
       "Phase-based training curriculum",
       "2 swing reviews per month",
@@ -73,6 +91,7 @@ export const MEMBERSHIP_TIERS = {
     swingReviews: 4,
     feedbackTime: "48hr",
     lessonRate: 115,
+    inPersonCredits: 0,
     features: [
       "Everything in Starter",
       "4 swing reviews per month",
@@ -90,6 +109,7 @@ export const MEMBERSHIP_TIERS = {
     swingReviews: -1, // Unlimited
     feedbackTime: "24hr",
     lessonRate: 115,
+    inPersonCredits: 0,
     features: [
       "Everything in Pro",
       "Unlimited swing reviews",
@@ -135,6 +155,11 @@ export const MEMBERSHIP_TIERS = {
     ],
   },
 } as const;
+
+// Helper to get hybrid credits for a tier
+export const getHybridCredits = (tier: MembershipTier): number => {
+  return MEMBERSHIP_TIERS[tier]?.inPersonCredits || 0;
+};
 
 export type MembershipTier = keyof typeof MEMBERSHIP_TIERS;
 

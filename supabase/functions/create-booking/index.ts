@@ -11,12 +11,16 @@ interface BookingRequest {
   coachId: string;
   startTime: string; // ISO datetime string
   endTime: string;
-  paymentMethod: "credits" | "package" | "direct_pay";
+  paymentMethod: "credits" | "package" | "direct_pay" | "hybrid_credit";
   purchasedPackageId?: string;
   amountPaid?: number;
   stripePaymentId?: string;
   notes?: string;
 }
+
+const logStep = (step: string, details?: any) => {
+  console.log(`[CREATE-BOOKING] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -51,6 +55,8 @@ serve(async (req) => {
       notes,
     }: BookingRequest = await req.json();
 
+    logStep("Booking request received", { userId: user.id, paymentMethod, serviceTypeId });
+
     // Validate required fields
     if (!serviceTypeId || !coachId || !startTime || !endTime) {
       throw new Error("Missing required booking fields");
@@ -67,6 +73,37 @@ serve(async (req) => {
 
     if (conflicts && conflicts.length > 0) {
       throw new Error("This time slot is no longer available");
+    }
+
+    // Handle hybrid credit payment
+    if (paymentMethod === "hybrid_credit") {
+      // Get user profile to check hybrid credits
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("hybrid_credits_remaining, membership_tier")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      if (!profile) throw new Error("Profile not found");
+      
+      const hybridCredits = profile.hybrid_credits_remaining || 0;
+      logStep("Checking hybrid credits", { available: hybridCredits, tier: profile.membership_tier });
+      
+      if (hybridCredits <= 0) {
+        throw new Error("No hybrid credits available. Please use a package or pay directly.");
+      }
+
+      // Deduct hybrid credit
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          hybrid_credits_remaining: hybridCredits - 1,
+        })
+        .eq("user_id", user.id);
+
+      if (updateError) throw updateError;
+      logStep("Hybrid credit deducted", { remaining: hybridCredits - 1 });
     }
 
     // If using package credits, validate and decrement
@@ -101,9 +138,12 @@ serve(async (req) => {
         .eq("id", purchasedPackageId);
 
       if (updateError) throw updateError;
+      logStep("Package credit deducted", { packageId: purchasedPackageId, remaining: newRemaining });
     }
 
-    // Create booking
+    // Create booking - store the actual payment method used
+    const bookingPaymentMethod = paymentMethod === "hybrid_credit" ? "credits" : paymentMethod;
+    
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
       .insert({
@@ -113,16 +153,18 @@ serve(async (req) => {
         start_time: startTime,
         end_time: endTime,
         status: "confirmed",
-        payment_method: paymentMethod,
+        payment_method: bookingPaymentMethod,
         purchased_package_id: purchasedPackageId || null,
         amount_paid: amountPaid || 0,
         stripe_payment_id: stripePaymentId || null,
-        notes: notes || null,
+        notes: notes ? `${notes}${paymentMethod === "hybrid_credit" ? " [Hybrid Credit]" : ""}` : (paymentMethod === "hybrid_credit" ? "[Hybrid Credit]" : null),
       })
       .select()
       .single();
 
     if (bookingError) throw bookingError;
+
+    logStep("Booking created successfully", { bookingId: booking.id, paymentMethod });
 
     return new Response(JSON.stringify({ booking }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -130,7 +172,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error("Error in create-booking:", message);
+    logStep("ERROR", { message });
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

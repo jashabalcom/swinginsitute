@@ -73,7 +73,7 @@ export interface Booking {
   start_time: string;
   end_time: string;
   status: "pending" | "confirmed" | "completed" | "cancelled" | "no_show";
-  payment_method: "credits" | "package" | "direct_pay" | null;
+  payment_method: "credits" | "package" | "direct_pay" | "hybrid_credit" | null;
   purchased_package_id: string | null;
   amount_paid: number | null;
   stripe_payment_id: string | null;

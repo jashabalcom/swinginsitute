@@ -26,6 +26,8 @@ import AdminServiceTypes from "./pages/AdminServiceTypes";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminMembers from "./pages/AdminMembers";
 import AdminPackages from "./pages/AdminPackages";
+import AdminVideos from "./pages/AdminVideos";
+import AdminDrills from "./pages/AdminDrills";
 import Settings from "./pages/Settings";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -205,6 +207,22 @@ const App = () => (
               element={
                 <AdminRoute>
                   <AdminPackages />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/videos"
+              element={
+                <AdminRoute>
+                  <AdminVideos />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/drills"
+              element={
+                <AdminRoute>
+                  <AdminDrills />
                 </AdminRoute>
               }
             />

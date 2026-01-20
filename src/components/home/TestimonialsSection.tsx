@@ -59,22 +59,6 @@ export function TestimonialsSection() {
           ))}
         </div>
 
-        {/* MLB Credibility */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-16 text-center"
-        >
-          <div className="inline-block card-accent-red p-6 md:p-8">
-            <p className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
-              MLB ALL-STAR <span className="text-primary">CEDRIC MULLINS</span>
-            </p>
-            <p className="text-muted-foreground">
-              Publicly credited Coach Jasha Balcom with teaching him how to hit at the pro level.
-            </p>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

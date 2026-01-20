@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import coachJasha from "@/assets/coach-jasha-hero.jpg";
+import coachJasha from "@/assets/coach-jasha-seated.jpg";
 
 const achievements = [
   "Former Professional Baseball Player",
@@ -85,7 +85,7 @@ export default function About() {
                 <div className="relative rounded-2xl overflow-hidden border border-border">
                   <img
                     src={coachJasha}
-                    alt="Coach Jasha Balcom"
+                    alt="Coach Jasha Balcom - Founder of The Swing Institute"
                     className="w-full h-auto object-cover"
                   />
                 </div>

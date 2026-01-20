@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, Play, Clock, Users } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 const learnings = [
   { bold: "What most hitting lessons miss", rest: " (and why they rarely lead to long-term growth)" },
@@ -15,13 +17,24 @@ const learnings = [
 ];
 
 export default function Masterclass() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Masterclass signup:", { name, email });
+    setIsSubmitting(true);
+    
+    // Show success and redirect to booking page
+    toast.success("Great! Let's get you scheduled for a call.", {
+      description: "Redirecting to booking calendar..."
+    });
+    
+    // Small delay for toast to show, then redirect
+    setTimeout(() => {
+      navigate("/book-call");
+    }, 1500);
   };
 
   return (
@@ -176,9 +189,13 @@ export default function Masterclass() {
                     className="bg-background border-border h-12"
                     required
                   />
-                  <Button type="submit" className="w-full btn-hero h-14 text-lg">
-                    RESERVE YOUR FREE SPOT NOW
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                  <Button 
+                    type="submit" 
+                    className="w-full btn-hero h-14 text-lg"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "REDIRECTING..." : "RESERVE YOUR FREE SPOT NOW"}
+                    {!isSubmitting && <ArrowRight className="ml-2 h-5 w-5" />}
                   </Button>
                 </form>
 

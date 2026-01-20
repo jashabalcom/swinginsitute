@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Calendar } from "lucide-react";
 
 interface GoHighLevelCalendarProps {
   calendarId: string;
@@ -10,13 +11,9 @@ interface GoHighLevelCalendarProps {
 /**
  * GoHighLevel Calendar Embed Component
  * 
- * To use this component, get the calendar ID from GoHighLevel:
- * 1. Go to GoHighLevel > Calendars
- * 2. Select the calendar you want to embed
- * 3. Click "Share" or "Embed"
- * 4. Copy the calendar ID from the embed code URL
- * 
- * Example embed URL: https://api.leadconnectorhq.com/widget/booking/YOUR_CALENDAR_ID
+ * Calendar IDs:
+ * - Parent Call: xxNZzagjCWL70aXHBopO
+ * - Mindset Coaching: gh6w28zo1gVh7KDUAYBX
  */
 export function GoHighLevelCalendar({ 
   calendarId, 
@@ -25,9 +22,22 @@ export function GoHighLevelCalendar({
 }: GoHighLevelCalendarProps) {
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load GHL embed script
+  useEffect(() => {
+    const existingScript = document.querySelector('script[src="https://link.msgsndr.com/js/embed.js"]');
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.src = "https://link.msgsndr.com/js/embed.js";
+      script.type = "text/javascript";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   if (!calendarId) {
     return (
-      <div className="w-full flex items-center justify-center bg-muted/50 rounded-xl p-8" style={{ minHeight: height }}>
+      <div className="w-full flex flex-col items-center justify-center bg-muted/20 rounded-xl p-8" style={{ minHeight: height }}>
+        <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
         <p className="text-muted-foreground text-center">
           Calendar not configured. Contact support.
         </p>
@@ -36,16 +46,28 @@ export function GoHighLevelCalendar({
   }
 
   return (
-    <div className="relative w-full rounded-xl overflow-hidden border border-border">
+    <div className="relative w-full rounded-xl overflow-hidden bg-card">
       {isLoading && (
-        <div className="absolute inset-0 bg-background">
+        <div className="absolute inset-0 bg-card z-10">
           <div className="p-6 space-y-4">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-64 w-full" />
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            </div>
+            <Skeleton className="h-64 w-full rounded-lg" />
             <div className="grid grid-cols-3 gap-2">
-              <Skeleton className="h-12" />
-              <Skeleton className="h-12" />
-              <Skeleton className="h-12" />
+              <Skeleton className="h-12 rounded-lg" />
+              <Skeleton className="h-12 rounded-lg" />
+              <Skeleton className="h-12 rounded-lg" />
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <Skeleton className="h-10 rounded-lg" />
+              <Skeleton className="h-10 rounded-lg" />
+              <Skeleton className="h-10 rounded-lg" />
+              <Skeleton className="h-10 rounded-lg" />
             </div>
           </div>
         </div>
@@ -56,10 +78,12 @@ export function GoHighLevelCalendar({
           width: "100%", 
           height, 
           border: "none",
-          display: "block"
+          display: "block",
+          background: "transparent"
         }}
         scrolling="no"
         title={title}
+        id="msgsndr-calendar"
         onLoad={() => setIsLoading(false)}
       />
     </div>

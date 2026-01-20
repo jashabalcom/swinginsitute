@@ -166,6 +166,73 @@ serve(async (req) => {
 
     logStep("Booking created successfully", { bookingId: booking.id, paymentMethod });
 
+    // Get service type name for email
+    const { data: serviceType } = await supabase
+      .from("service_types")
+      .select("name")
+      .eq("id", serviceTypeId)
+      .maybeSingle();
+
+    // Get customer details
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    // Get coach email (admin user)
+    const { data: coachProfile } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("user_id", coachId)
+      .maybeSingle();
+
+    let coachEmail = null;
+    if (coachProfile) {
+      const { data: coachAuth } = await supabase.auth.admin.getUserById(coachId);
+      coachEmail = coachAuth?.user?.email;
+    }
+
+    // Send confirmation emails (non-blocking)
+    try {
+      const emailPayload = {
+        bookingId: booking.id,
+        customerEmail: user.email,
+        customerName: profile?.full_name || user.email?.split('@')[0] || 'Guest',
+        coachEmail,
+        serviceName: serviceType?.name || 'Training Session',
+        startTime,
+        endTime,
+        paymentMethod,
+        amountPaid,
+      };
+
+      logStep("Sending confirmation emails", emailPayload);
+
+      // Call the email function
+      const emailResponse = await fetch(
+        `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-booking-confirmation`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify(emailPayload),
+        }
+      );
+
+      if (!emailResponse.ok) {
+        const errorText = await emailResponse.text();
+        logStep("Email sending failed (non-critical)", { error: errorText });
+      } else {
+        logStep("Confirmation emails sent successfully");
+      }
+    } catch (emailError) {
+      // Don't fail the booking if email fails
+      logStep("Email error (non-critical)", { error: emailError instanceof Error ? emailError.message : 'Unknown' });
+    }
+
     return new Response(JSON.stringify({ booking }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

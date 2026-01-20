@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Package, Sparkles, Check } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Packages() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { packages, createCheckout } = useBooking();
 
@@ -18,7 +19,8 @@ export default function Packages() {
 
   const handlePurchase = async (priceId: string) => {
     if (!user) {
-      toast({ title: "Please sign in", description: "You need to be signed in to purchase." });
+      // Redirect to login with return URL
+      navigate(`/login?redirect=${encodeURIComponent('/packages')}`);
       return;
     }
 

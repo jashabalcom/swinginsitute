@@ -119,7 +119,13 @@ export default function Book() {
   }, [bookingType]);
 
   const handleBookSession = async () => {
-    if (!selectedDate || !selectedSlot || !user) return;
+    if (!selectedDate || !selectedSlot) return;
+
+    // For credit-based payments, require login
+    if ((paymentMethod === "hybrid_credit" || paymentMethod === "package") && !user) {
+      navigate(`/login?redirect=${encodeURIComponent('/book')}`);
+      return;
+    }
 
     setBookingLoading(true);
 
@@ -127,7 +133,7 @@ export default function Book() {
       const startTime = new Date(`${format(selectedDate, "yyyy-MM-dd")}T${selectedSlot.startTime}:00`);
       const endTime = addMinutes(startTime, currentOption.duration);
 
-      if (paymentMethod === "hybrid_credit" && coachId) {
+      if (paymentMethod === "hybrid_credit" && coachId && user) {
         // Book using hybrid membership credits
         const { error } = await createBooking({
           serviceTypeId: bookingType,
@@ -144,7 +150,7 @@ export default function Book() {
           description: `Membership credit used (${hybridCreditsRemaining - 1} remaining this month).` 
         });
         navigate("/my-bookings?success=true");
-      } else if (paymentMethod === "package" && selectedPackageId && coachId) {
+      } else if (paymentMethod === "package" && selectedPackageId && coachId && user) {
         // Book using package credits
         const { error } = await createBooking({
           serviceTypeId: bookingType,
@@ -160,7 +166,7 @@ export default function Book() {
         toast({ title: "Session booked!", description: `1 credit has been used from your package for ${currentOption.name}.` });
         navigate("/my-bookings?success=true");
       } else {
-        // Pay directly via Stripe
+        // Pay directly via Stripe (works for guests and logged-in users)
         const { url, error } = await createCheckout(STRIPE_PRICES.SINGLE_LESSON.priceId, "payment");
         if (error) throw new Error(error);
         if (url) window.location.href = url;
@@ -176,19 +182,8 @@ export default function Book() {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="pt-24 pb-12 container mx-auto px-4 text-center">
-          <h1 className="text-2xl font-bold mb-4">Sign in to book a session</h1>
-          <Link to="/login">
-            <Button>Sign In</Button>
-          </Link>
-        </main>
-      </div>
-    );
-  }
+  // Guest mode: Allow viewing but redirect credit-based payments to login
+  const isGuest = !user;
 
   return (
     <div className="min-h-screen bg-background">

@@ -237,7 +237,7 @@ export default function TrainAtlanta() {
                 Book a Parent Game Plan Call to discuss your player's goals and 
                 see if training with Coach Jasha is the right fit.
               </p>
-              <Link to="/masterclass">
+              <Link to="/book-call">
                 <Button className="btn-hero group">
                   Book Your Parent Call
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

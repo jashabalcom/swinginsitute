@@ -606,6 +606,7 @@ export type Database = {
           is_preview: boolean | null
           module_id: string
           sort_order: number | null
+          thumbnail_url: string | null
           title: string
           video_duration_seconds: number | null
           video_url: string | null
@@ -618,6 +619,7 @@ export type Database = {
           is_preview?: boolean | null
           module_id: string
           sort_order?: number | null
+          thumbnail_url?: string | null
           title: string
           video_duration_seconds?: number | null
           video_url?: string | null
@@ -630,6 +632,7 @@ export type Database = {
           is_preview?: boolean | null
           module_id?: string
           sort_order?: number | null
+          thumbnail_url?: string | null
           title?: string
           video_duration_seconds?: number | null
           video_url?: string | null

@@ -17,6 +17,7 @@ import {
   BookOpen,
   MessageSquare,
   BarChart3,
+  GraduationCap,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,13 @@ const managementSections = [
     href: "/admin/drills",
     icon: BookOpen,
     color: "text-cyan-500",
+  },
+  {
+    title: "Academy Content",
+    description: "Manage curriculum, modules, and lesson videos",
+    href: "/admin/academy",
+    icon: GraduationCap,
+    color: "text-orange-500",
   },
   {
     title: "Training Room",

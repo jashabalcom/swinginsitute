@@ -118,7 +118,7 @@ export default function TrainAtlanta() {
         </section>
 
         {/* What's Included */}
-        <section className="py-16 bg-card/50">
+        <section id="includes" className="py-16 bg-card/50 scroll-mt-24">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -150,7 +150,7 @@ export default function TrainAtlanta() {
         </section>
 
         {/* Packages */}
-        <section className="py-16 md:py-24">
+        <section id="packages" className="py-16 md:py-24 scroll-mt-24">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

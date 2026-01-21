@@ -21,7 +21,7 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="py-24 md:py-32">
+    <section id="testimonials" className="py-24 md:py-32 scroll-mt-24">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div

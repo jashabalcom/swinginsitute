@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useScrollToSection } from "@/hooks/useScrollToSection";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
@@ -59,6 +60,9 @@ const MOBILE_CTA_PAGES = ["/", "/train-online", "/train-atlanta", "/hybrid", "/a
 function AppContent() {
   const location = useLocation();
   const showMobileCTA = MOBILE_CTA_PAGES.includes(location.pathname);
+  
+  // Handle scroll to section on hash navigation
+  useScrollToSection();
 
   return (
     <AuthProvider>

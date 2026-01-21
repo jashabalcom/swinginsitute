@@ -159,7 +159,7 @@ export default function About() {
         </section>
 
         {/* MLB Credibility */}
-        <section className="py-16 bg-card/50" id="success">
+        <section className="py-16 bg-card/50 scroll-mt-24" id="success">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

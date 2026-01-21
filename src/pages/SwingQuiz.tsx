@@ -249,9 +249,12 @@ const QuizQuestions = forwardRef<HTMLDivElement, QuizQuestionsProps>(({
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3 text-center">
                 {question.question}
               </h2>
+              <p className="text-sm text-muted-foreground text-center mb-8">
+                {question.reassurance}
+              </p>
 
               <div className="space-y-3">
                 {question.options.map((option, index) => (

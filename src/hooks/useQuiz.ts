@@ -33,7 +33,7 @@ export function useQuiz(): {
   const [step, setStep] = useState<QuizStep>('landing');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>(INITIAL_ANSWERS);
-  const [contact, setContact] = useState<QuizContact>({ name: '', email: '', phone: '' });
+  const [contact, setContact] = useState<QuizContact>({ name: '', email: '', phone: '', smsConsent: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [abVariant, setAbVariant] = useState<ABVariant | null>(null);
 

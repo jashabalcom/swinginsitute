@@ -1,10 +1,11 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -19,6 +20,9 @@ const optInSchema = z.object({
   email: z.string().email('Please enter a valid email'),
   phone: z.string().min(10, 'Please enter a valid phone number'),
   playerName: z.string().optional(),
+  smsConsent: z.boolean().refine((val) => val === true, {
+    message: 'You must consent to receive text messages',
+  }),
 });
 
 type OptInFormData = z.infer<typeof optInSchema>;
@@ -36,6 +40,7 @@ export function QuizOptInForm({ onSubmit, isSubmitting }: QuizOptInFormProps) {
       email: '',
       phone: '',
       playerName: '',
+      smsConsent: false,
     },
   });
 
@@ -129,6 +134,28 @@ export function QuizOptInForm({ onSubmit, isSubmitting }: QuizOptInFormProps) {
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="smsConsent"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-border p-4 bg-card/50">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="text-sm font-normal text-muted-foreground cursor-pointer">
+                  I consent to receive text messages from The Swing Institute. Message frequency varies. 
+                  Reply STOP to opt out. Message and data rates may apply.
+                </FormLabel>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+
         <Button
           type="submit"
           size="lg"
@@ -147,7 +174,10 @@ export function QuizOptInForm({ onSubmit, isSubmitting }: QuizOptInFormProps) {
 
         <p className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2 mt-4">
           <Lock className="w-4 h-4" />
-          We respect your privacy. No spam.
+          We respect your privacy.{' '}
+          <Link to="/privacy" className="underline hover:text-foreground transition-colors">
+            Privacy Policy
+          </Link>
         </p>
       </form>
     </Form>

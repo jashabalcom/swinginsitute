@@ -22,8 +22,8 @@ interface GHLContact {
   customFields?: Record<string, any>[];
 }
 
-// Helper to make GHL API requests
-async function ghlRequest(endpoint: string, method: string, body?: any) {
+// Helper to make GHL API requests (returns null on error instead of throwing for recoverable errors)
+async function ghlRequest(endpoint: string, method: string, body?: any): Promise<any> {
   const apiKey = Deno.env.get("GHL_API_KEY");
   const locationId = Deno.env.get("GHL_LOCATION_ID");
 
@@ -50,35 +50,80 @@ async function ghlRequest(endpoint: string, method: string, body?: any) {
 
   if (!response.ok) {
     logStep("GHL API Error", { status: response.status, data });
+    // Return error data instead of throwing for 400 errors (duplicates)
+    if (response.status === 400) {
+      return { error: true, status: response.status, data };
+    }
     throw new Error(`GHL API Error: ${response.status} - ${JSON.stringify(data)}`);
   }
 
   return data;
 }
 
-// Find contact by email
+// Find contact by email using lookup endpoint first, then fallback to search
 async function findContactByEmail(email: string): Promise<GHLContact | null> {
   const locationId = Deno.env.get("GHL_LOCATION_ID");
+  
   try {
-    const data = await ghlRequest(
+    // Try the lookup endpoint first (more reliable for exact email match)
+    logStep("Attempting contact lookup", { email });
+    const lookupData = await ghlRequest(
+      `/contacts/lookup?locationId=${locationId}&email=${encodeURIComponent(email)}`,
+      "GET"
+    );
+    
+    // Check if lookup returned a contact
+    if (lookupData.contact) {
+      logStep("Contact found via lookup", { 
+        id: lookupData.contact.id, 
+        email: lookupData.contact.email 
+      });
+      return lookupData.contact;
+    }
+    
+    // If lookup didn't error but no contact, try search as fallback
+    logStep("Lookup returned no contact, trying search", { email });
+  } catch (lookupError) {
+    logStep("Lookup endpoint failed, trying search", { 
+      email, 
+      error: lookupError instanceof Error ? lookupError.message : "Unknown" 
+    });
+  }
+
+  // Fallback to search query
+  try {
+    const searchData = await ghlRequest(
       `/contacts/?locationId=${locationId}&query=${encodeURIComponent(email)}`,
       "GET"
     );
     
-    if (data.contacts && data.contacts.length > 0) {
-      const contact = data.contacts.find((c: any) => 
+    logStep("Search results", { 
+      email, 
+      count: searchData.contacts?.length || 0 
+    });
+    
+    if (searchData.contacts && searchData.contacts.length > 0) {
+      const contact = searchData.contacts.find((c: any) => 
         c.email?.toLowerCase() === email.toLowerCase()
       );
-      return contact || null;
+      if (contact) {
+        logStep("Contact found via search", { id: contact.id, email: contact.email });
+        return contact;
+      }
     }
+    
+    logStep("No contact found", { email });
     return null;
   } catch (error) {
-    logStep("Error finding contact", { email, error: error instanceof Error ? error.message : "Unknown" });
+    logStep("Error in contact search", { 
+      email, 
+      error: error instanceof Error ? error.message : "Unknown" 
+    });
     return null;
   }
 }
 
-// Create or update contact
+// Create or update contact with duplicate error recovery
 async function upsertContact(contact: GHLContact): Promise<string> {
   const locationId = Deno.env.get("GHL_LOCATION_ID");
   
@@ -116,11 +161,37 @@ async function upsertContact(contact: GHLContact): Promise<string> {
   } else {
     // Create new contact - locationId required for POST
     logStep("Creating new contact", { email: contact.email });
-    const data = await ghlRequest("/contacts/", "POST", {
+    const createResult = await ghlRequest("/contacts/", "POST", {
       locationId,
       ...baseContactData,
     });
-    return data.contact?.id;
+    
+    // Handle duplicate error response - extract contactId and update instead
+    if (createResult?.error && createResult.status === 400) {
+      const errorData = createResult.data;
+      
+      // Check if it's a duplicate contact error
+      if (errorData?.meta?.contactId) {
+        const existingId = errorData.meta.contactId;
+        logStep("Duplicate detected, updating instead", { 
+          contactId: existingId, 
+          email: contact.email 
+        });
+        
+        // Update the existing contact with our data
+        await ghlRequest(
+          `/contacts/${existingId}`,
+          "PUT",
+          baseContactData
+        );
+        return existingId;
+      }
+      
+      // If it's a different 400 error, throw it
+      throw new Error(`GHL API Error: 400 - ${JSON.stringify(errorData)}`);
+    }
+    
+    return createResult.contact?.id;
   }
 }
 

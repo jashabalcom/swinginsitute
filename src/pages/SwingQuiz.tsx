@@ -4,27 +4,65 @@ import { ArrowLeft, ArrowRight, Clock, Users, Award, CheckCircle } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useQuiz } from '@/hooks/useQuiz';
+import { useABTest, ABVariant } from '@/hooks/useABTest';
 import { QUIZ_QUESTIONS, QuizAnswers } from '@/types/quiz';
 import { QuizOptInForm } from '@/components/quiz/QuizOptInForm';
 
+const AB_TEST_ID = 'swing_quiz_headline_v1';
+
+// A/B Test Variants
+const HEADLINE_VARIANTS: Record<ABVariant, { headline: React.ReactNode; subheadline: string }> = {
+  A: {
+    headline: (
+      <>
+        Is Your Child's Swing Holding Them Back — Or Just{' '}
+        <span className="text-primary">One Adjustment Away?</span>
+      </>
+    ),
+    subheadline: "Take this 60-second quiz to find out what most parents miss — and what to focus on next.",
+  },
+  B: {
+    headline: (
+      <>
+        Discover the <span className="text-primary">#1 Swing Mistake</span> Holding Your Player Back
+      </>
+    ),
+    subheadline: "Answer 7 quick questions and get a personalized breakdown from an MLB-level coach.",
+  },
+};
+
 export default function SwingQuiz() {
+  const { variant, isLoading: variantLoading } = useABTest(AB_TEST_ID);
+  const quizHook = useQuiz();
   const {
     step,
     currentQuestion,
     answers,
     isSubmitting,
     progress,
-    startQuiz,
     answerQuestion,
     goBack,
     submitOptIn,
-  } = useQuiz();
+  } = quizHook;
+
+  // Pass variant to startQuiz for tracking
+  const handleStartQuiz = () => {
+    quizHook.startQuiz(variant);
+  };
+
+  if (variantLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <AnimatePresence mode="wait">
         {step === 'landing' && (
-          <QuizLanding key="landing" onStart={startQuiz} />
+          <QuizLanding key="landing" onStart={handleStartQuiz} variant={variant} />
         )}
         
         {step === 'questions' && (
@@ -50,7 +88,14 @@ export default function SwingQuiz() {
   );
 }
 
-function QuizLanding({ onStart }: { onStart: () => void }) {
+interface QuizLandingProps {
+  onStart: () => void;
+  variant: ABVariant;
+}
+
+function QuizLanding({ onStart, variant }: QuizLandingProps) {
+  const content = HEADLINE_VARIANTS[variant];
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -72,25 +117,24 @@ function QuizLanding({ onStart }: { onStart: () => void }) {
             <span className="text-sm font-medium">60-Second Assessment</span>
           </motion.div>
 
-          {/* Headline */}
+          {/* Headline - A/B Tested */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="text-3xl md:text-5xl font-bold text-foreground mb-6 leading-tight"
           >
-            Is Your Child's Swing Holding Them Back — Or Just{' '}
-            <span className="text-primary">One Adjustment Away?</span>
+            {content.headline}
           </motion.h1>
 
-          {/* Subheadline */}
+          {/* Subheadline - A/B Tested */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto"
           >
-            Take this 60-second quiz to find out what most parents miss — and what to focus on next.
+            {content.subheadline}
           </motion.p>
 
           {/* CTA Button */}

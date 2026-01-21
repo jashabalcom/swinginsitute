@@ -77,16 +77,16 @@ export const trackPageView = (path: string) => {
 };
 
 // Quiz funnel tracking
-export const trackQuizStart = () => {
-  trackFBCustomEvent('QuizStart', { quiz_name: 'swing_assessment' });
-  trackGAEvent('quiz_start', { quiz_name: 'swing_assessment' });
+export const trackQuizStart = (variant?: string) => {
+  trackFBCustomEvent('QuizStart', { quiz_name: 'swing_assessment', variant });
+  trackGAEvent('quiz_start', { quiz_name: 'swing_assessment', variant });
 };
 
 export const trackQuizStep = (step: number) => {
   trackGAEvent('quiz_progress', { step, quiz_name: 'swing_assessment' });
 };
 
-export const trackQuizComplete = (profile: string) => {
-  trackFBEvent('Lead', { content_name: 'swing_quiz', lead_type: profile });
-  trackGAEvent('generate_lead', { method: 'quiz', profile });
+export const trackQuizComplete = (profile: string, variant?: string) => {
+  trackFBEvent('Lead', { content_name: 'swing_quiz', lead_type: profile, variant });
+  trackGAEvent('generate_lead', { method: 'quiz', profile, variant });
 };

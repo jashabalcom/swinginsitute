@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { QuizAnswers, QuizContact, QuizStep, ResultProfile, calculateResultProfile } from '@/types/quiz';
 import { useGHLSync } from '@/hooks/useGHLSync';
 import { trackQuizStart, trackQuizStep, trackQuizComplete } from '@/lib/tracking';
+import { ABVariant } from '@/hooks/useABTest';
 
 const INITIAL_ANSWERS: QuizAnswers = {
   age: '',
@@ -14,7 +15,18 @@ const INITIAL_ANSWERS: QuizAnswers = {
   parentGoal: '',
 };
 
-export function useQuiz() {
+export function useQuiz(): {
+  step: QuizStep;
+  currentQuestion: number;
+  answers: QuizAnswers;
+  contact: QuizContact;
+  isSubmitting: boolean;
+  progress: number;
+  startQuiz: (variant?: ABVariant) => void;
+  answerQuestion: (questionId: keyof QuizAnswers, value: string) => void;
+  goBack: () => void;
+  submitOptIn: (contactData: QuizContact) => Promise<void>;
+} {
   const navigate = useNavigate();
   const { syncQuiz } = useGHLSync();
   
@@ -23,9 +35,13 @@ export function useQuiz() {
   const [answers, setAnswers] = useState<QuizAnswers>(INITIAL_ANSWERS);
   const [contact, setContact] = useState<QuizContact>({ name: '', email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [abVariant, setAbVariant] = useState<ABVariant | null>(null);
 
-  const startQuiz = useCallback(() => {
-    trackQuizStart();
+  const startQuiz = useCallback((variant?: ABVariant) => {
+    if (variant) {
+      setAbVariant(variant);
+    }
+    trackQuizStart(variant);
     setStep('questions');
     setCurrentQuestion(0);
   }, []);
@@ -69,7 +85,7 @@ export function useQuiz() {
         contactData.playerName
       );
 
-      trackQuizComplete(profile);
+      trackQuizComplete(profile, abVariant || undefined);
 
       // Navigate to results with state
       navigate('/quiz-results', {
@@ -92,7 +108,7 @@ export function useQuiz() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [answers, navigate, syncQuiz]);
+  }, [answers, navigate, syncQuiz, abVariant]);
 
   const progress = step === 'questions' ? ((currentQuestion + 1) / 7) * 100 : 0;
 

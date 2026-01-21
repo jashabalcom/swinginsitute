@@ -76,9 +76,52 @@ export function useGHLSync() {
     }
   };
 
+  const syncQuiz = async (
+    email: string,
+    name: string,
+    phone: string,
+    answers: {
+      age: string;
+      level: string;
+      frustration: string;
+      trainingFrequency: string;
+      confidence: string;
+      coachingHistory: string;
+      parentGoal: string;
+    },
+    resultProfile: string,
+    playerName?: string
+  ) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("ghl-sync", {
+        body: {
+          action: "sync_quiz",
+          email,
+          name,
+          phone,
+          playerName,
+          answers,
+          resultProfile,
+        },
+      });
+
+      if (error) {
+        console.error("[GHL] Quiz sync failed:", error);
+        return false;
+      }
+
+      console.log("[GHL] Quiz synced successfully:", data);
+      return true;
+    } catch (err) {
+      console.error("[GHL] Quiz sync error:", err);
+      return false;
+    }
+  };
+
   return {
     syncSignup,
     syncBooking,
     addTags,
+    syncQuiz,
   };
 }

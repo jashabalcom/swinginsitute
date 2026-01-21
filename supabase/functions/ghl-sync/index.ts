@@ -211,6 +211,37 @@ serve(async (req) => {
         });
       }
 
+      case "sync_quiz": {
+        // Sync quiz completion to GHL with full tagging
+        const { email, name, phone, playerName, answers, resultProfile } = payload;
+        
+        const tags = [
+          "Quiz: Swing Assessment",
+          `Age: ${answers.age}`,
+          `Level: ${answers.level}`,
+          `Frustration: ${answers.frustration}`,
+          `Training: ${answers.trainingFrequency}`,
+          `Confidence: ${answers.confidence}`,
+          `Coaching: ${answers.coachingHistory}`,
+          `Goal: ${answers.parentGoal}`,
+          `Profile: ${resultProfile}`,
+          "Source: Quiz Funnel",
+        ];
+
+        const contactId = await upsertContact({
+          email,
+          name,
+          phone,
+          tags,
+        });
+
+        logStep("Quiz synced", { email, profile: resultProfile, contactId });
+
+        return new Response(JSON.stringify({ success: true, contactId }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },

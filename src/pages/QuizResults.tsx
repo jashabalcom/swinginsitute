@@ -4,16 +4,14 @@ import {
   CheckCircle, 
   ArrowRight, 
   Target, 
-  Calendar, 
-  Phone, 
   Star,
   Award,
-  Users,
-  Zap
+  Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QuizAnswers, ResultProfile, QUIZ_QUESTIONS } from '@/types/quiz';
 import coachJashaImage from '@/assets/coach-jasha-seated.jpg';
+import { ProTestimonialSection } from '@/components/home/ProTestimonialSection';
 
 interface LocationState {
   answers: QuizAnswers;
@@ -102,6 +100,9 @@ export default function QuizResults() {
           </motion.div>
         </div>
       </section>
+
+      {/* Pro Testimonial Section for Social Proof */}
+      <ProTestimonialSection />
     </div>
   );
 }

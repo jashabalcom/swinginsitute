@@ -94,8 +94,8 @@ async function upsertContact(contact: GHLContact): Promise<string> {
     lastName = nameParts.slice(1).join(" ") || "";
   }
 
-  const contactData = {
-    locationId,
+  // Base contact data (shared between create and update)
+  const baseContactData = {
     email: contact.email,
     firstName,
     lastName,
@@ -105,18 +105,21 @@ async function upsertContact(contact: GHLContact): Promise<string> {
   };
 
   if (existingContact?.id) {
-    // Update existing contact
+    // Update existing contact - DO NOT include locationId in PUT request body
     logStep("Updating existing contact", { id: existingContact.id, email: contact.email });
-    const data = await ghlRequest(
+    await ghlRequest(
       `/contacts/${existingContact.id}`,
       "PUT",
-      contactData
+      baseContactData
     );
     return existingContact.id;
   } else {
-    // Create new contact
+    // Create new contact - locationId required for POST
     logStep("Creating new contact", { email: contact.email });
-    const data = await ghlRequest("/contacts/", "POST", contactData);
+    const data = await ghlRequest("/contacts/", "POST", {
+      locationId,
+      ...baseContactData,
+    });
     return data.contact?.id;
   }
 }

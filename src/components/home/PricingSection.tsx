@@ -68,7 +68,7 @@ const tiers = [
 
 export function PricingSection() {
   return (
-    <section className="py-20 md:py-28 bg-card/30">
+    <section id="pricing" className="py-20 md:py-28 bg-card/30 scroll-mt-24">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div

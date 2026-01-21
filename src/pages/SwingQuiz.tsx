@@ -1,4 +1,4 @@
-import { useState, forwardRef } from 'react';
+import { useState, forwardRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Clock, Users, Award, CheckCircle, Phone, MapPin } from 'lucide-react';
@@ -6,9 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useQuiz } from '@/hooks/useQuiz';
 import { useABTest, ABVariant } from '@/hooks/useABTest';
+import { useExitIntent } from '@/hooks/useExitIntent';
+import { useGHLSync } from '@/hooks/useGHLSync';
 import { QUIZ_QUESTIONS, QuizAnswers } from '@/types/quiz';
 import { QuizOptInForm } from '@/components/quiz/QuizOptInForm';
+import { ExitIntentPopup } from '@/components/quiz/ExitIntentPopup';
 import swingInstituteLogo from '@/assets/swing-institute-logo.png';
+
 const AB_TEST_ID = 'swing_quiz_headline_v1';
 
 // A/B Test Variants
@@ -34,6 +38,7 @@ const HEADLINE_VARIANTS: Record<ABVariant, { headline: React.ReactNode; subheadl
 
 export default function SwingQuiz() {
   const { variant, isLoading: variantLoading } = useABTest(AB_TEST_ID);
+  const { syncQuizAbandonment } = useGHLSync();
   const quizHook = useQuiz();
   const {
     step,
@@ -45,6 +50,22 @@ export default function SwingQuiz() {
     goBack,
     submitOptIn,
   } = quizHook;
+
+  // Exit intent - only enabled during questions step
+  const { showExitIntent, closeExitIntent } = useExitIntent({
+    enabled: step === 'questions',
+    delay: 3000,
+  });
+
+  // Handle saving progress from exit intent popup
+  const handleSaveProgress = useCallback(async (email: string) => {
+    try {
+      await syncQuizAbandonment(email, answers, currentQuestion);
+    } catch (error) {
+      console.error('Failed to save quiz progress:', error);
+      throw error;
+    }
+  }, [syncQuizAbandonment, answers, currentQuestion]);
 
   // Pass variant to startQuiz for tracking
   const handleStartQuiz = () => {
@@ -85,6 +106,14 @@ export default function SwingQuiz() {
           />
         )}
       </AnimatePresence>
+
+      {/* Exit Intent Popup */}
+      <ExitIntentPopup
+        isOpen={showExitIntent}
+        onClose={closeExitIntent}
+        currentQuestion={currentQuestion}
+        onSaveProgress={handleSaveProgress}
+      />
     </div>
   );
 }

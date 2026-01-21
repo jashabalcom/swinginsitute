@@ -242,6 +242,37 @@ serve(async (req) => {
         });
       }
 
+      case "sync_quiz_abandonment": {
+        // Sync quiz abandonment (exit-intent email capture) to GHL
+        const { email, partialAnswers, questionReached } = payload;
+        
+        const tags = [
+          "Quiz: Abandoned",
+          `Quiz Reached: Q${questionReached + 1}/7`,
+          "Source: Exit Intent",
+        ];
+
+        // Add any answered questions as tags
+        if (partialAnswers.age) tags.push(`Age: ${partialAnswers.age}`);
+        if (partialAnswers.level) tags.push(`Level: ${partialAnswers.level}`);
+        if (partialAnswers.frustration) tags.push(`Frustration: ${partialAnswers.frustration}`);
+        if (partialAnswers.trainingFrequency) tags.push(`Training: ${partialAnswers.trainingFrequency}`);
+        if (partialAnswers.confidence) tags.push(`Confidence: ${partialAnswers.confidence}`);
+        if (partialAnswers.coachingHistory) tags.push(`Coaching: ${partialAnswers.coachingHistory}`);
+        if (partialAnswers.parentGoal) tags.push(`Goal: ${partialAnswers.parentGoal}`);
+
+        const contactId = await upsertContact({
+          email,
+          tags,
+        });
+
+        logStep("Quiz abandonment synced", { email, questionReached, contactId });
+
+        return new Response(JSON.stringify({ success: true, contactId }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },

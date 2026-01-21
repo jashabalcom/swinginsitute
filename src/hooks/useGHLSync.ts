@@ -118,10 +118,47 @@ export function useGHLSync() {
     }
   };
 
+  const syncQuizAbandonment = async (
+    email: string,
+    partialAnswers: {
+      age?: string;
+      level?: string;
+      frustration?: string;
+      trainingFrequency?: string;
+      confidence?: string;
+      coachingHistory?: string;
+      parentGoal?: string;
+    },
+    questionReached: number
+  ) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("ghl-sync", {
+        body: {
+          action: "sync_quiz_abandonment",
+          email,
+          partialAnswers,
+          questionReached,
+        },
+      });
+
+      if (error) {
+        console.error("[GHL] Quiz abandonment sync failed:", error);
+        return false;
+      }
+
+      console.log("[GHL] Quiz abandonment synced successfully:", data);
+      return true;
+    } catch (err) {
+      console.error("[GHL] Quiz abandonment sync error:", err);
+      return false;
+    }
+  };
+
   return {
     syncSignup,
     syncBooking,
     addTags,
     syncQuiz,
+    syncQuizAbandonment,
   };
 }

@@ -13,6 +13,7 @@ export interface QuizContact {
   email: string;
   phone: string;
   playerName?: string;
+  smsConsent: boolean;
 }
 
 export type QuizStep = 'landing' | 'questions' | 'optin' | 'results';

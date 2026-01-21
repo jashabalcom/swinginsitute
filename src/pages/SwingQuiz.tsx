@@ -1,13 +1,14 @@
 import { useState, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Clock, Users, Award, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, Clock, Users, Award, CheckCircle, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useQuiz } from '@/hooks/useQuiz';
 import { useABTest, ABVariant } from '@/hooks/useABTest';
 import { QUIZ_QUESTIONS, QuizAnswers } from '@/types/quiz';
 import { QuizOptInForm } from '@/components/quiz/QuizOptInForm';
-
+import swingInstituteLogo from '@/assets/swing-institute-logo.png';
 const AB_TEST_ID = 'swing_quiz_headline_v1';
 
 // A/B Test Variants
@@ -104,6 +105,17 @@ const QuizLanding = forwardRef<HTMLDivElement, QuizLandingProps>(({ onStart, var
       exit={{ opacity: 0 }}
       className="min-h-screen flex flex-col"
     >
+      {/* Header with Logo */}
+      <div className="py-4 px-4 border-b border-border/30">
+        <div className="max-w-2xl mx-auto flex justify-center">
+          <img 
+            src={swingInstituteLogo} 
+            alt="The Swing Institute" 
+            className="h-10 md:h-12 w-auto"
+          />
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="max-w-2xl mx-auto text-center">
@@ -177,11 +189,27 @@ const QuizLanding = forwardRef<HTMLDivElement, QuizLandingProps>(({ onStart, var
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="py-6 border-t border-border/50">
-        <p className="text-center text-sm text-muted-foreground">
-          The Swing Institute • Trusted by parents nationwide
-        </p>
+      {/* Footer with Legal Links and Contact */}
+      <div className="py-6 border-t border-border/50 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground mb-3">
+            <div className="flex items-center gap-1">
+              <Phone className="w-4 h-4" />
+              <a href="tel:7707620990" className="hover:text-foreground transition-colors">(770) 762-0990</a>
+            </div>
+            <div className="flex items-center gap-1">
+              <MapPin className="w-4 h-4" />
+              <span>Atlanta, GA</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
+            <span>The Swing Institute</span>
+            <span className="hidden sm:inline">•</span>
+            <Link to="/privacy" className="hover:text-foreground transition-colors underline">Privacy Policy</Link>
+            <span className="hidden sm:inline">•</span>
+            <Link to="/terms" className="hover:text-foreground transition-colors underline">Terms</Link>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

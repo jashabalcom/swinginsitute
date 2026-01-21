@@ -86,24 +86,19 @@ export default function QuizResults() {
             <CoachSection />
           </motion.div>
 
-          {/* Secondary CTAs */}
+          {/* Simplified Secondary Option - Less Prominent */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            className="text-center"
           >
-            <Link to="/hybrid">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                Explore Training Program
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-            <Link to="/masterclass">
-              <Button variant="ghost" size="lg" className="w-full sm:w-auto">
-                Watch Free Masterclass
-              </Button>
-            </Link>
+            <p className="text-sm text-muted-foreground">
+              Not ready to book?{' '}
+              <Link to="/masterclass" className="underline hover:text-foreground transition-colors">
+                Watch our free masterclass first
+              </Link>
+            </p>
           </motion.div>
         </div>
       </section>

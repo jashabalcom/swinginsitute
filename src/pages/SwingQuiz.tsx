@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Clock, Users, Award, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -93,11 +93,12 @@ interface QuizLandingProps {
   variant: ABVariant;
 }
 
-function QuizLanding({ onStart, variant }: QuizLandingProps) {
+const QuizLanding = forwardRef<HTMLDivElement, QuizLandingProps>(({ onStart, variant }, ref) => {
   const content = HEADLINE_VARIANTS[variant];
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -184,7 +185,8 @@ function QuizLanding({ onStart, variant }: QuizLandingProps) {
       </div>
     </motion.div>
   );
-}
+});
+QuizLanding.displayName = 'QuizLanding';
 
 interface QuizQuestionsProps {
   currentQuestion: number;
@@ -194,13 +196,13 @@ interface QuizQuestionsProps {
   onBack: () => void;
 }
 
-function QuizQuestions({
+const QuizQuestions = forwardRef<HTMLDivElement, QuizQuestionsProps>(({
   currentQuestion,
   answers,
   progress,
   onAnswer,
   onBack,
-}: QuizQuestionsProps) {
+}, ref) => {
   const question = QUIZ_QUESTIONS[currentQuestion];
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
 
@@ -211,6 +213,7 @@ function QuizQuestions({
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -278,16 +281,18 @@ function QuizQuestions({
       </div>
     </motion.div>
   );
-}
+});
+QuizQuestions.displayName = 'QuizQuestions';
 
 interface QuizOptInProps {
   onSubmit: (data: { name: string; email: string; phone: string; playerName?: string }) => void;
   isSubmitting: boolean;
 }
 
-function QuizOptIn({ onSubmit, isSubmitting }: QuizOptInProps) {
+const QuizOptIn = forwardRef<HTMLDivElement, QuizOptInProps>(({ onSubmit, isSubmitting }, ref) => {
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -320,4 +325,5 @@ function QuizOptIn({ onSubmit, isSubmitting }: QuizOptInProps) {
       </div>
     </motion.div>
   );
-}
+});
+QuizOptIn.displayName = 'QuizOptIn';

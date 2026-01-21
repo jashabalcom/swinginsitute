@@ -48,6 +48,8 @@ import AcademyLevel from "./pages/AcademyLevel";
 import AcademyModule from "./pages/AcademyModule";
 import AcademyLesson from "./pages/AcademyLesson";
 import Events from "./pages/Events";
+import SwingQuiz from "./pages/SwingQuiz";
+import QuizResults from "./pages/QuizResults";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +74,8 @@ function AppContent() {
         <Route path="/about" element={<About />} />
         <Route path="/book-call" element={<BookCall />} />
         <Route path="/book-mindset" element={<BookMindset />} />
+        <Route path="/swing-quiz" element={<SwingQuiz />} />
+        <Route path="/quiz-results" element={<QuizResults />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/cookies" element={<Cookies />} />
         <Route path="/terms" element={<Terms />} />

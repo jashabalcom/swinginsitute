@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, X, Check, CheckCheck } from "lucide-react";
+import { 
+  Bell, 
+  CheckCheck, 
+  UserPlus, 
+  MessageSquare, 
+  MessageCircle, 
+  Mail,
+  Activity
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -23,6 +31,44 @@ interface Notification {
   read_at: string | null;
   created_at: string;
 }
+
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case "new_user":
+      return UserPlus;
+    case "new_post":
+      return MessageSquare;
+    case "new_comment":
+      return MessageCircle;
+    case "new_dm":
+      return Mail;
+    case "mention":
+      return MessageSquare;
+    case "coach_feedback":
+      return Activity;
+    default:
+      return Bell;
+  }
+};
+
+const getNotificationColor = (type: string) => {
+  switch (type) {
+    case "new_user":
+      return "bg-emerald-500";
+    case "new_post":
+      return "bg-blue-500";
+    case "new_comment":
+      return "bg-sky-500";
+    case "new_dm":
+      return "bg-purple-500";
+    case "mention":
+      return "bg-amber-500";
+    case "coach_feedback":
+      return "bg-rose-500";
+    default:
+      return "bg-primary";
+  }
+};
 
 export function NotificationBell() {
   const { user } = useAuth();
@@ -70,7 +116,7 @@ export function NotificationBell() {
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (error) throw error;
       setNotifications(data || []);
@@ -130,14 +176,18 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-medium">
+            <motion.span 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-medium"
+            >
               {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
+            </motion.span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
-        <div className="flex items-center justify-between p-4 border-b">
+      <PopoverContent align="end" className="w-96 p-0">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && (
             <Button
@@ -152,7 +202,7 @@ export function NotificationBell() {
           )}
         </div>
 
-        <ScrollArea className="max-h-80">
+        <ScrollArea className="max-h-[400px]">
           {loading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
@@ -163,40 +213,52 @@ export function NotificationBell() {
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-border">
               <AnimatePresence>
-                {notifications.map(notification => (
-                  <motion.button
-                    key={notification.id}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    onClick={() => handleNotificationClick(notification)}
-                    className={`w-full p-4 text-left hover:bg-muted/50 transition-colors ${
-                      !notification.read_at ? "bg-primary/5" : ""
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                        !notification.read_at ? "bg-primary" : "bg-transparent"
-                      }`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {notification.title}
-                        </p>
-                        {notification.content && (
-                          <p className="text-xs text-muted-foreground truncate mt-0.5">
-                            {notification.content}
+                {notifications.map(notification => {
+                  const Icon = getNotificationIcon(notification.type);
+                  const colorClass = getNotificationColor(notification.type);
+                  
+                  return (
+                    <motion.button
+                      key={notification.id}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={() => handleNotificationClick(notification)}
+                      className={`w-full p-4 text-left hover:bg-muted/50 transition-colors ${
+                        !notification.read_at ? "bg-primary/5" : ""
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Icon with color indicator */}
+                        <div className={`w-8 h-8 rounded-full ${colorClass}/20 flex items-center justify-center flex-shrink-0`}>
+                          <Icon className={`w-4 h-4 ${colorClass.replace('bg-', 'text-')}`} />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium truncate">
+                              {notification.title}
+                            </p>
+                            {!notification.read_at && (
+                              <span className={`w-2 h-2 rounded-full ${colorClass} flex-shrink-0`} />
+                            )}
+                          </div>
+                          {notification.content && (
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                              {notification.content}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatDistanceToNow(new Date(notification.created_at), {
+                              addSuffix: true,
+                            })}
                           </p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {formatDistanceToNow(new Date(notification.created_at), {
-                            addSuffix: true,
-                          })}
-                        </p>
+                        </div>
                       </div>
-                    </div>
-                  </motion.button>
-                ))}
+                    </motion.button>
+                  );
+                })}
               </AnimatePresence>
             </div>
           )}

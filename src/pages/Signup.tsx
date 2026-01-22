@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { trackSignup } from "@/lib/tracking";
+import { supabase } from "@/integrations/supabase/client";
 import swingInstituteLogo from "@/assets/swing-institute-logo.png";
 
 export default function Signup() {
@@ -34,6 +35,14 @@ export default function Signup() {
     } else {
       // Track successful signup
       trackSignup("email");
+      
+      // Send admin email alert for new registration (fire and forget)
+      supabase.functions.invoke("admin-email-alerts", {
+        body: {
+          alertType: "new_registration",
+          data: { email, fullName }
+        }
+      }).catch(err => console.error("Failed to send admin alert:", err));
       
       toast({
         title: "Welcome to the Swing Institute!",

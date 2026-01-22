@@ -18,12 +18,17 @@ import {
   MessageSquare,
   BarChart3,
   GraduationCap,
+  MessageCircle,
+  Mail,
+  Activity,
+  Bell,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 
 const kpiCards = [
   { key: "totalRevenue", label: "Total Revenue", icon: DollarSign, format: "currency" },
@@ -106,6 +111,36 @@ const managementSections = [
     color: "text-green-500",
   },
 ];
+
+const getActivityIcon = (type: string) => {
+  switch (type) {
+    case "new_user":
+      return UserPlus;
+    case "new_post":
+      return MessageSquare;
+    case "new_comment":
+      return MessageCircle;
+    case "new_dm":
+      return Mail;
+    default:
+      return Activity;
+  }
+};
+
+const getActivityColor = (type: string) => {
+  switch (type) {
+    case "new_user":
+      return "text-emerald-500 bg-emerald-500/20";
+    case "new_post":
+      return "text-blue-500 bg-blue-500/20";
+    case "new_comment":
+      return "text-sky-500 bg-sky-500/20";
+    case "new_dm":
+      return "text-purple-500 bg-purple-500/20";
+    default:
+      return "text-primary bg-primary/20";
+  }
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -279,7 +314,61 @@ export default function AdminDashboard() {
             </motion.section>
           )}
 
-          {/* Management Sections */}
+          {/* Recent Activity */}
+          {metrics.recentActivity.length > 0 && (
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28 }}
+              className="mb-8"
+            >
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5 text-primary" />
+                    Recent Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[280px]">
+                    <div className="space-y-3">
+                      {metrics.recentActivity.map((activity) => {
+                        const Icon = getActivityIcon(activity.type);
+                        const colorClass = getActivityColor(activity.type);
+                        
+                        return (
+                          <div
+                            key={activity.id}
+                            className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
+                          >
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {activity.title}
+                              </p>
+                              {activity.content && (
+                                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                  {activity.content}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {formatDistanceToNow(new Date(activity.created_at), {
+                                  addSuffix: true,
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </motion.section>
+          )}
+
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

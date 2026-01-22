@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useLocation, Navigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { QuizAnswers, ResultProfile, QUIZ_QUESTIONS } from '@/types/quiz';
 import coachJashaImage from '@/assets/coach-jasha-seated.jpg';
 import { ProTestimonialSection } from '@/components/home/ProTestimonialSection';
+import { trackViewContent } from '@/lib/tracking';
 
 interface LocationState {
   answers: QuizAnswers;
@@ -31,6 +33,11 @@ export default function QuizResults() {
   const { answers, contact, profile } = state;
   const firstName = contact.name.split(' ')[0];
   const playerName = contact.playerName || 'your player';
+
+  // Track ViewContent for quiz results (high-value page for optimization)
+  useEffect(() => {
+    trackViewContent(`quiz_result_${profile.toLowerCase().replace(' ', '_')}`, 'quiz_result');
+  }, [profile]);
 
   return (
     <div className="min-h-screen bg-background">

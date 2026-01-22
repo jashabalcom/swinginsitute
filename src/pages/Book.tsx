@@ -17,6 +17,7 @@ import { ServiceCard } from "@/components/booking/ServiceCard";
 import { BookingSummary } from "@/components/booking/BookingSummary";
 import { STRIPE_PRICES } from "@/config/stripe";
 import { supabase } from "@/integrations/supabase/client";
+import { trackSchedule, trackViewContent } from "@/lib/tracking";
 import {
   Dialog,
   DialogContent,
@@ -179,6 +180,9 @@ export default function Book() {
 
         if (error) throw new Error(error);
 
+        // Track Schedule event for Meta Pixel
+        trackSchedule(currentOption.name, currentOption.memberPrice);
+
         toast({ 
           title: "Session booked!", 
           description: `Membership credit used (${hybridCreditsRemaining - 1} remaining this month).` 
@@ -196,6 +200,9 @@ export default function Book() {
         });
 
         if (error) throw new Error(error);
+
+        // Track Schedule event for Meta Pixel
+        trackSchedule(currentOption.name, currentOption.memberPrice);
 
         toast({ title: "Session booked!", description: `1 credit has been used from your package for ${currentOption.name}.` });
         navigate("/my-bookings?success=true");

@@ -1,4 +1,4 @@
-import { useState, forwardRef, useCallback } from 'react';
+import { useState, forwardRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Clock, Users, Award, CheckCircle, Phone, MapPin } from 'lucide-react';
@@ -11,6 +11,7 @@ import { useGHLSync } from '@/hooks/useGHLSync';
 import { QUIZ_QUESTIONS, QuizAnswers } from '@/types/quiz';
 import { QuizOptInForm } from '@/components/quiz/QuizOptInForm';
 import { ExitIntentPopup } from '@/components/quiz/ExitIntentPopup';
+import { trackViewContent, trackQuizStep } from '@/lib/tracking';
 import swingInstituteLogo from '@/assets/swing-institute-logo.png';
 
 const AB_TEST_ID = 'swing_quiz_headline_v1';
@@ -125,6 +126,11 @@ interface QuizLandingProps {
 
 const QuizLanding = forwardRef<HTMLDivElement, QuizLandingProps>(({ onStart, variant }, ref) => {
   const content = HEADLINE_VARIANTS[variant];
+
+  // Track ViewContent when quiz landing loads
+  useEffect(() => {
+    trackViewContent('swing_quiz_landing', 'quiz_landing');
+  }, []);
 
   return (
     <motion.div
@@ -265,6 +271,8 @@ const QuizQuestions = forwardRef<HTMLDivElement, QuizQuestionsProps>(({
 
   const handleSelect = (value: string) => {
     setSelectedValue(value);
+    // Track quiz step progress to Meta Pixel
+    trackQuizStep(currentQuestion + 1);
     onAnswer(question.id, value);
   };
 

@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, MapPin, Clock, Star, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
+import { trackViewContent } from "@/lib/tracking";
 import coachJasha from "@/assets/coach-jasha-seated.jpg";
 
 const sessionIncludes = [
@@ -44,6 +46,11 @@ const packages = [
 ];
 
 export default function TrainAtlanta() {
+  // Track ViewContent for Atlanta training page
+  useEffect(() => {
+    trackViewContent('train_atlanta', 'train_atlanta_page', 145);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />

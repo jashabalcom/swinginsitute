@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Package, Sparkles, Check } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,6 +9,7 @@ import { useBooking } from "@/hooks/useBooking";
 import { UserPackageCard } from "@/components/booking/UserPackageCard";
 import { LESSON_PACKAGES, STRIPE_PRICES } from "@/config/stripe";
 import { Button } from "@/components/ui/button";
+import { trackViewContent, trackAddToCart } from "@/lib/tracking";
 
 export default function Packages() {
   const { toast } = useToast();
@@ -17,7 +19,10 @@ export default function Packages() {
 
   const isMember = profile?.membership_tier && profile.membership_tier !== "starter";
 
-  const handlePurchase = async (priceId: string) => {
+  const handlePurchase = async (priceId: string, packageName: string, price: number) => {
+    // Track AddToCart event
+    trackAddToCart(packageName, price, priceId);
+
     if (!user) {
       // Redirect to login with return URL
       navigate(`/login?redirect=${encodeURIComponent('/packages')}`);
@@ -182,7 +187,7 @@ export default function Packages() {
                     </ul>
 
                     <Button
-                      onClick={() => handlePurchase(pkg.priceId)}
+                      onClick={() => handlePurchase(pkg.priceId, pkg.name, isMember ? pkg.memberPrice : pkg.basePrice)}
                       className={`w-full ${
                         pkg.popular
                           ? "bg-primary hover:bg-primary/90"

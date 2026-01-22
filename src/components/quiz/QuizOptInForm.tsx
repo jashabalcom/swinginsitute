@@ -18,11 +18,21 @@ import {
 const optInSchema = z.object({
   name: z.string().min(2, 'Please enter your name'),
   email: z.string().email('Please enter a valid email'),
-  phone: z.string().min(10, 'Please enter a valid phone number'),
+  phone: z.string().optional().refine(
+    (val) => !val || val.replace(/\D/g, '').length >= 10,
+    { message: 'Please enter a valid phone number' }
+  ),
   playerName: z.string().optional(),
-  smsConsent: z.boolean().refine((val) => val === true, {
-    message: 'You must consent to receive text messages',
-  }),
+  smsConsent: z.boolean(),
+}).superRefine((data, ctx) => {
+  const phoneDigits = data.phone?.replace(/\D/g, '') || '';
+  if (phoneDigits.length >= 10 && !data.smsConsent) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Please consent to receive texts if providing a phone number',
+      path: ['smsConsent'],
+    });
+  }
 });
 
 type OptInFormData = z.infer<typeof optInSchema>;
@@ -96,7 +106,9 @@ export function QuizOptInForm({ onSubmit, isSubmitting }: QuizOptInFormProps) {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>
+                Phone Number <span className="text-muted-foreground font-normal">(optional)</span>
+              </FormLabel>
               <FormControl>
                 <Input
                   type="tel"
@@ -109,6 +121,9 @@ export function QuizOptInForm({ onSubmit, isSubmitting }: QuizOptInFormProps) {
                   }}
                 />
               </FormControl>
+              <p className="text-xs text-muted-foreground mt-1">
+                Add your phone for a free 60-second video tip from Coach Jasha
+              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -134,27 +149,29 @@ export function QuizOptInForm({ onSubmit, isSubmitting }: QuizOptInFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="smsConsent"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-border p-4 bg-card/50">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel className="text-sm font-normal text-muted-foreground cursor-pointer">
-                  I consent to receive text messages from The Swing Institute. Message frequency varies. 
-                  Reply STOP to opt out. Message and data rates may apply.
-                </FormLabel>
-                <FormMessage />
-              </div>
-            </FormItem>
-          )}
-        />
+        {(form.watch('phone')?.replace(/\D/g, '').length ?? 0) >= 10 && (
+          <FormField
+            control={form.control}
+            name="smsConsent"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-border p-4 bg-card/50">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-sm font-normal text-muted-foreground cursor-pointer">
+                    I consent to receive text messages from The Swing Institute. Message frequency varies. 
+                    Reply STOP to opt out. Message and data rates may apply.
+                  </FormLabel>
+                  <FormMessage />
+                </div>
+              </FormItem>
+            )}
+          />
+        )}
 
         <Button
           type="submit"

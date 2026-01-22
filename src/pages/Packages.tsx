@@ -194,7 +194,7 @@ export default function Packages() {
                           : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
                       }`}
                     >
-                      {pkg.sessions === 1 ? "Book Session" : "Buy Package"}
+                      {pkg.sessions === 1 ? "Buy Single Lesson" : "Buy Package"}
                     </Button>
                   </motion.div>
                 );

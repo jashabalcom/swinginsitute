@@ -1,11 +1,15 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, MapPin, Clock, Star, CheckCircle2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { trackViewContent } from "@/lib/tracking";
+import { trackViewContent, trackAddToCart } from "@/lib/tracking";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBooking } from "@/hooks/useBooking";
+import { useToast } from "@/hooks/use-toast";
+import { STRIPE_PRICES } from "@/config/stripe";
 import coachJasha from "@/assets/coach-jasha-seated.jpg";
 
 const sessionIncludes = [
@@ -45,11 +49,42 @@ const packages = [
   },
 ];
 
+// Map package names to Stripe price IDs
+const packagePriceMap: Record<string, string> = {
+  "Single Session": STRIPE_PRICES.SINGLE_LESSON.priceId,
+  "3-Session Pack": STRIPE_PRICES.PACKAGE_3.priceId,
+  "6-Session Pack": STRIPE_PRICES.PACKAGE_6.priceId,
+};
+
 export default function TrainAtlanta() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { createCheckout } = useBooking();
+  const { toast } = useToast();
+
   // Track ViewContent for Atlanta training page
   useEffect(() => {
     trackViewContent('train_atlanta', 'train_atlanta_page', 145);
   }, []);
+
+  const handlePurchase = async (packageName: string, price: number) => {
+    const priceId = packagePriceMap[packageName];
+    if (!priceId) return;
+
+    trackAddToCart(packageName, price, priceId);
+
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent('/packages')}`);
+      return;
+    }
+
+    const { url, error } = await createCheckout(priceId, "payment");
+    if (error) {
+      toast({ title: "Error", description: error, variant: "destructive" });
+      return;
+    }
+    if (url) window.location.href = url;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -211,17 +246,16 @@ export default function TrainAtlanta() {
                     </span>
                   )}
                   <p className="text-sm text-muted-foreground mb-6">{pkg.description}</p>
-                  <Link to="/book" className="w-full block">
-                    <Button
-                      className={`w-full ${
-                        pkg.popular
-                          ? "bg-primary hover:bg-primary/90"
-                          : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
-                      }`}
-                    >
-                      Book Now
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => handlePurchase(pkg.name, parseInt(pkg.price.replace('$', '')))}
+                    className={`w-full ${
+                      pkg.popular
+                        ? "bg-primary hover:bg-primary/90"
+                        : "bg-transparent border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
+                    }`}
+                  >
+                    {pkg.sessions === "1 session" ? "Buy Session" : "Buy Package"}
+                  </Button>
                 </motion.div>
               ))}
             </div>

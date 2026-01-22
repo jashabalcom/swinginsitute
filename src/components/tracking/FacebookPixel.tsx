@@ -1,58 +1,80 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const FB_PIXEL_ID = import.meta.env.VITE_FB_PIXEL_ID;
+// Hardcoded pixel ID - this is public information visible in page source
+const FB_PIXEL_ID = import.meta.env.VITE_FB_PIXEL_ID || '1609199719332056';
+
+declare global {
+  interface Window {
+    fbq: ((...args: unknown[]) => void) & {
+      callMethod?: (...args: unknown[]) => void;
+      queue: unknown[];
+      loaded: boolean;
+      version: string;
+    };
+    _fbq: typeof window.fbq;
+  }
+}
 
 export function FacebookPixel() {
   const location = useLocation();
+  const initialized = useRef(false);
 
   useEffect(() => {
-    if (!FB_PIXEL_ID) return;
+    if (initialized.current) return;
+    
+    console.log('[Meta Pixel] Initializing with ID:', FB_PIXEL_ID);
 
-    // Initialize Facebook Pixel
-    const initPixel = () => {
-      if (window.fbq) return;
+    // Create fbq function before script loads
+    const fbq = function (...args: unknown[]) {
+      if (fbq.callMethod) {
+        fbq.callMethod.apply(fbq, args);
+      } else {
+        fbq.queue.push(args);
+      }
+    } as typeof window.fbq;
 
-      const n = (window.fbq = function (...args: unknown[]) {
-        // @ts-expect-error - fbq.callMethod exists at runtime
-        n.callMethod ? n.callMethod.apply(n, args) : n.queue.push(args);
-      } as typeof window.fbq & { 
-        push: typeof Array.prototype.push;
-        loaded: boolean;
-        version: string;
-        queue: unknown[];
-      });
-      
-      // @ts-expect-error - _fbq may not exist initially
-      if (!window._fbq) window._fbq = n;
-      
-      (n as unknown as { push: typeof Array.prototype.push }).push = n as unknown as typeof Array.prototype.push;
-      (n as unknown as { loaded: boolean }).loaded = true;
-      (n as unknown as { version: string }).version = '2.0';
-      (n as unknown as { queue: unknown[] }).queue = [];
+    fbq.queue = [];
+    fbq.loaded = true;
+    fbq.version = '2.0';
 
-      // Load the script
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      const firstScript = document.getElementsByTagName('script')[0];
-      firstScript?.parentNode?.insertBefore(script, firstScript);
+    window.fbq = fbq;
+    window._fbq = fbq;
 
-      // Initialize pixel
+    // Load the Facebook Pixel script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    
+    script.onload = () => {
+      console.log('[Meta Pixel] Script loaded successfully');
+      // Init and track after script loads
       window.fbq('init', FB_PIXEL_ID);
       window.fbq('track', 'PageView');
+      console.log('[Meta Pixel] Initialized and PageView tracked');
+    };
+    
+    script.onerror = () => {
+      console.error('[Meta Pixel] Failed to load script - may be blocked by ad blocker');
     };
 
-    initPixel();
+    document.head.appendChild(script);
+    initialized.current = true;
   }, []);
 
-  // Track page views on route changes
+  // Track page views on route changes (skip initial since we track in init)
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    if (!FB_PIXEL_ID || !window.fbq) return;
-    window.fbq('track', 'PageView');
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    
+    if (window.fbq) {
+      window.fbq('track', 'PageView');
+      console.log('[Meta Pixel] PageView tracked for:', location.pathname);
+    }
   }, [location.pathname]);
-
-  if (!FB_PIXEL_ID) return null;
 
   return (
     <noscript>

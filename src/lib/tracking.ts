@@ -1,8 +1,8 @@
 // Tracking utility for Facebook Pixel and Google Analytics
+// Note: Window.fbq type is declared in FacebookPixel.tsx
 
 declare global {
   interface Window {
-    fbq: (...args: unknown[]) => void;
     gtag: (...args: unknown[]) => void;
     dataLayer: unknown[];
   }

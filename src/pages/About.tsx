@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Award, Users, Target, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Award, Users, Target, CheckCircle2, TrendingUp, Eye, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -7,17 +7,20 @@ import { Button } from "@/components/ui/button";
 import coachJasha from "@/assets/coach-jasha-seated.jpg";
 
 const achievements = [
-  "Former Professional Baseball Player",
+  "Drafted by Pittsburgh Pirates (High School)",
+  "Perfect Game All-American & MVP (Wood Bat Showcase)",
+  "#1 High School Player in Georgia (Class of 2000)",
+  "University of Georgia Baseball Alum",
+  "Signed with Chicago Cubs Organization",
+  "Pro Scout & Agent – Knows What Scouts Actually Look For",
   "Trained MLB All-Star Cedric Mullins",
-  "Developed 1,200+ Players Across the U.S.",
-  "Founder of The Swing Institute",
-  "Creator of the Phase-Based Development System",
 ];
 
 const stats = [
+  { number: "20+", label: "Years Experience" },
   { number: "1,200+", label: "Players Trained" },
   { number: "MLB", label: "Pro System" },
-  { number: "100%", label: "Results-Focused" },
+  { number: "50+", label: "College Commits" },
 ];
 
 export default function About() {
@@ -46,9 +49,11 @@ export default function About() {
                 </h1>
 
                 <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                  Former pro player. Mentor to hundreds. The coach behind MLB All-Star 
-                  Cedric Mullins' hitting development. Jasha has dedicated his career 
-                  to building championship-level hitters through a proven, systematic approach.
+                  Drafted by the Pittsburgh Pirates out of high school. Perfect Game All-American. 
+                  #1 player in Georgia. UGA alum. Chicago Cubs signee. Pro scout and agent. 
+                  And the coach behind MLB All-Star Cedric Mullins. Coach Jasha has lived every 
+                  level of baseball—and now dedicates 20+ years of experience to building 
+                  championship-level hitters.
                 </p>
 
                 <div className="space-y-3 mb-8">
@@ -84,7 +89,7 @@ export default function About() {
                 <div className="relative rounded-2xl overflow-hidden border border-border">
                   <img
                     src={coachJasha}
-                    alt="Coach Jasha Balcom - Founder of The Swing Institute"
+                    alt="Coach Jasha Balcom - Perfect Game All-American, UGA Baseball, Pittsburgh Pirates draft pick"
                     className="w-full h-auto object-cover"
                   />
                 </div>
@@ -153,6 +158,108 @@ export default function About() {
                   the same system. The same attention. The same results-driven approach 
                   that's developed players at every level — from travel ball to the MLB.
                 </p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* The Journey - Personal Story */}
+        <section className="py-16 md:py-24 bg-card/30">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-3xl mx-auto"
+            >
+              <div className="text-center mb-12">
+                <TrendingUp className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
+                  THE <span className="gradient-text-red">JOURNEY</span>
+                </h2>
+              </div>
+              
+              <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+                <p>
+                  In 2005, during Spring Training, I lost my father. It changed everything.
+                </p>
+                <p>
+                  I stepped away from professional baseball—not because I had to, 
+                  but because I realized the game had become my identity, not my purpose.
+                </p>
+                <p>
+                  That experience shaped everything I teach today: mental resilience, 
+                  emotional regulation, identity beyond the game, and long-term athlete 
+                  development. I train players not just to hit at a high level—but to 
+                  handle the pressure, the failures, and the journey that comes with it.
+                </p>
+                <p className="text-primary font-semibold italic text-xl">
+                  "I don't just build swings. I build players who can handle anything."
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* The Edge - Scouting & Agent Experience */}
+        <section className="py-16 md:py-24">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-4xl mx-auto text-center"
+            >
+              <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
+                THE <span className="gradient-text-blue">EDGE</span>
+              </h2>
+              <p className="text-lg text-muted-foreground mb-10">
+                Most coaches teach hitting. I teach players how to get noticed.
+              </p>
+              
+              <div className="grid md:grid-cols-3 gap-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="card-premium p-6"
+                >
+                  <Eye className="w-10 h-10 text-primary mx-auto mb-4" />
+                  <h3 className="font-bold text-foreground mb-2 text-lg">Scout's Eye</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Years as a pro scout taught me exactly what evaluators look for—
+                    and what separates "good" from "projectable."
+                  </p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                  className="card-premium p-6"
+                >
+                  <Award className="w-10 h-10 text-secondary mx-auto mb-4" />
+                  <h3 className="font-bold text-foreground mb-2 text-lg">Agent Experience</h3>
+                  <p className="text-sm text-muted-foreground">
+                    I've sat at the negotiating table. I understand draft dynamics, 
+                    projection vs. present tools, and the business side of baseball.
+                  </p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="card-premium p-6"
+                >
+                  <Brain className="w-10 h-10 text-accent mx-auto mb-4" />
+                  <h3 className="font-bold text-foreground mb-2 text-lg">Mindset Mastery</h3>
+                  <p className="text-sm text-muted-foreground">
+                    NLP-trained. I help players build unshakeable confidence and 
+                    identity-based performance habits that last.
+                  </p>
+                </motion.div>
               </div>
             </motion.div>
           </div>

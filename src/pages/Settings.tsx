@@ -9,6 +9,8 @@ import {
   KeyRound,
   Loader2,
   CreditCard,
+  Package,
+  Clock,
   ExternalLink,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -34,6 +36,8 @@ import { AvatarUpload } from "@/components/profile/AvatarUpload";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useBooking } from "@/hooks/useBooking";
+import { useHybridCredits } from "@/hooks/useHybridCredits";
 
 const tierBadgeColors: Record<string, string> = {
   starter: "tier-starter",
@@ -55,6 +59,9 @@ export default function Settings() {
   const navigate = useNavigate();
   const { user, profile, refreshProfile, loading, isOnboardingComplete } = useAuth();
   const { toast } = useToast();
+  const { packages: activePackages } = useBooking();
+  const { hybridCreditsRemaining, maxHybridCredits, isHybridMember, getNextResetDate } = useHybridCredits();
+  const totalPackageCredits = activePackages.reduce((sum, pkg) => sum + (pkg.sessions_remaining || 0), 0);
 
   const [saving, setSaving] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -405,6 +412,59 @@ export default function Settings() {
                   </span>
                 </div>
               )}
+
+              {/* Hybrid Credits Display */}
+              {isHybridMember && (
+                <div className="p-3 bg-secondary/10 rounded-lg border border-secondary/20">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-muted-foreground">Membership Credits</span>
+                    <span className="text-foreground font-bold">
+                      {hybridCreditsRemaining} / {maxHybridCredits}
+                    </span>
+                  </div>
+                  {getNextResetDate() && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Resets {getNextResetDate()?.toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Purchased Package Credits */}
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Package Credits</span>
+                <span className="text-foreground font-semibold">
+                  {totalPackageCredits} available
+                </span>
+              </div>
+
+              {/* Package details */}
+              {activePackages.length > 0 && (
+                <div className="p-3 bg-muted/30 rounded-lg space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                    <Package className="w-3 h-3" />
+                    Active Packages
+                  </p>
+                  {activePackages.map(pkg => (
+                    <div key={pkg.id} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{pkg.package?.name || "Package"}</span>
+                      <span className="text-foreground">
+                        {pkg.sessions_remaining} credits • expires {new Date(pkg.expires_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Buy more credits link */}
+              <Link to="/packages" className="block">
+                <Button variant="outline" size="sm" className="w-full border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
+                  <Package className="w-4 h-4 mr-2" />
+                  Buy Lesson Packages
+                </Button>
+              </Link>
+
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Feedback</span>
                 <span className="text-foreground font-semibold capitalize">

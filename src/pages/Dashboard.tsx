@@ -10,8 +10,12 @@ import {
   LogOut,
   Settings,
   Video,
+  Package,
+  Clock,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import { useBooking } from "@/hooks/useBooking";
+import { useHybridCredits } from "@/hooks/useHybridCredits";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,6 +64,18 @@ export default function Dashboard() {
     WEEKS_PER_PHASE,
   } = useProgressTracking();
   const { isAdmin } = useAdminSchedule();
+  const { packages: activePackages } = useBooking();
+  const { 
+    hybridCreditsRemaining, 
+    maxHybridCredits, 
+    isHybridMember,
+    getNextResetDate 
+  } = useHybridCredits();
+
+  // Calculate total package credits
+  const totalPackageCredits = activePackages.reduce(
+    (sum, pkg) => sum + (pkg.sessions_remaining || 0), 0
+  );
 
   const advancementStatus = getAdvancementStatus();
   const currentPhaseAcademyLinks = getCurrentPhaseAcademyLinks();
@@ -298,6 +314,81 @@ export default function Dashboard() {
                     </Link>
                   </div>
                 )}
+              </motion.section>
+
+              {/* My Credits Card */}
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="card-premium p-6"
+              >
+                <h2 className="font-display text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-secondary" />
+                  My Credits
+                </h2>
+                
+                <div className="space-y-3 text-sm">
+                  {/* Hybrid Membership Credits */}
+                  {isHybridMember && (
+                    <div className="p-3 bg-secondary/10 rounded-lg border border-secondary/20">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-muted-foreground">Membership Credits</span>
+                        <span className="text-foreground font-bold text-lg">
+                          {hybridCreditsRemaining} / {maxHybridCredits}
+                        </span>
+                      </div>
+                      {getNextResetDate() && (
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Resets {getNextResetDate()?.toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Purchased Package Credits */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Lesson Credits</span>
+                    <span className="text-foreground font-semibold">
+                      {totalPackageCredits} available
+                    </span>
+                  </div>
+                  
+                  {/* Package breakdown */}
+                  {activePackages.length > 0 && (
+                    <div className="text-xs text-muted-foreground space-y-1 pl-2 border-l-2 border-border">
+                      {activePackages.map(pkg => (
+                        <div key={pkg.id} className="flex justify-between">
+                          <span>{pkg.package?.name || "Package"}</span>
+                          <span>{pkg.sessions_remaining} left • expires {new Date(pkg.expires_at).toLocaleDateString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* No credits message */}
+                  {!isHybridMember && totalPackageCredits === 0 && (
+                    <p className="text-muted-foreground text-center py-2">
+                      No credits available
+                    </p>
+                  )}
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-border space-y-2">
+                  {(isHybridMember || totalPackageCredits > 0) && (
+                    <Link to="/book">
+                      <Button size="sm" className="w-full bg-secondary hover:bg-secondary/90">
+                        Use Credits - Book Session
+                      </Button>
+                    </Link>
+                  )}
+                  <Link to="/packages">
+                    <Button size="sm" variant="outline" className="w-full border-border">
+                      Buy More Credits
+                    </Button>
+                  </Link>
+                </div>
               </motion.section>
 
               {/* Training Room Quick Access */}

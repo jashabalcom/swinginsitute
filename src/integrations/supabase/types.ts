@@ -1433,6 +1433,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      notify_admins: {
+        Args: {
+          notification_content: string
+          notification_link?: string
+          notification_metadata?: Json
+          notification_title: string
+          notification_type: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "coach" | "member" | "parent"

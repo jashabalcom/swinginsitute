@@ -3,6 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { startOfDay, endOfDay, addDays, format } from "date-fns";
 
+interface RecentActivity {
+  id: string;
+  type: string;
+  title: string;
+  content: string | null;
+  created_at: string;
+  metadata: Record<string, any> | null;
+}
+
 interface DashboardMetrics {
   totalRevenue: number;
   activeMembers: number;
@@ -17,6 +26,7 @@ interface DashboardMetrics {
     status: string;
     user_id: string;
   }>;
+  recentActivity: RecentActivity[];
 }
 
 export function useAdminDashboard() {
@@ -30,6 +40,7 @@ export function useAdminDashboard() {
     activeServices: 0,
     todayBookings: 0,
     recentBookings: [],
+    recentActivity: [],
   });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -68,6 +79,7 @@ export function useAdminDashboard() {
         packagesResult,
         servicesResult,
         todayResult,
+        activityResult,
       ] = await Promise.all([
         // Total revenue from completed bookings
         supabase
@@ -113,6 +125,15 @@ export function useAdminDashboard() {
           .gte("start_time", todayStart)
           .lte("start_time", todayEnd)
           .order("start_time", { ascending: true }),
+        
+        // Recent activity (admin notifications)
+        supabase
+          .from("notifications")
+          .select("id, type, title, content, created_at, metadata")
+          .eq("user_id", user.id)
+          .in("type", ["new_user", "new_post", "new_comment", "new_dm"])
+          .order("created_at", { ascending: false })
+          .limit(10),
       ]);
 
       // Calculate total revenue
@@ -130,6 +151,10 @@ export function useAdminDashboard() {
         activeServices: servicesResult.count || 0,
         todayBookings: todayResult.data?.length || 0,
         recentBookings: todayResult.data || [],
+        recentActivity: (activityResult.data || []).map(item => ({
+          ...item,
+          metadata: item.metadata as Record<string, any> | null,
+        })),
       });
 
       setLoading(false);

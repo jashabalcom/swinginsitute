@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Globe, CheckCircle2, Video, Target, Users, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
+import { trackViewContent } from "@/lib/tracking";
 
 const tiers = [
   {
@@ -79,6 +81,11 @@ const systemFeatures = [
 ];
 
 export default function TrainOnline() {
+  // Track ViewContent for online training page
+  useEffect(() => {
+    trackViewContent('train_online', 'train_online_page', 199);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />

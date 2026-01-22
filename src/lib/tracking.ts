@@ -28,6 +28,44 @@ export const trackGAEvent = (event: string, params?: Record<string, unknown>) =>
   }
 };
 
+// ViewContent tracking for high-value pages
+export const trackViewContent = (contentName: string, contentId?: string, value?: number) => {
+  trackFBEvent('ViewContent', {
+    content_name: contentName,
+    content_ids: contentId ? [contentId] : undefined,
+    content_type: 'product',
+    value,
+    currency: 'USD'
+  });
+  trackGAEvent('view_item', {
+    content_name: contentName,
+    content_id: contentId,
+    value,
+    currency: 'USD'
+  });
+};
+
+// Schedule/booking event
+export const trackSchedule = (eventName: string, value?: number) => {
+  trackFBEvent('Schedule', { content_name: eventName, value, currency: 'USD' });
+  trackGAEvent('schedule', { event_name: eventName, value });
+};
+
+// Add to cart for package selection
+export const trackAddToCart = (productName: string, price: number, productId?: string) => {
+  trackFBEvent('AddToCart', {
+    content_name: productName,
+    content_ids: productId ? [productId] : undefined,
+    value: price,
+    currency: 'USD'
+  });
+  trackGAEvent('add_to_cart', {
+    currency: 'USD',
+    value: price,
+    items: [{ item_name: productName, price }]
+  });
+};
+
 // Conversion tracking helpers
 export const trackLead = (source?: string) => {
   trackFBEvent('Lead', { content_name: source || 'strategy_call' });
@@ -83,6 +121,7 @@ export const trackQuizStart = (variant?: string) => {
 };
 
 export const trackQuizStep = (step: number) => {
+  trackFBCustomEvent('QuizProgress', { step, quiz_name: 'swing_assessment' });
   trackGAEvent('quiz_progress', { step, quiz_name: 'swing_assessment' });
 };
 

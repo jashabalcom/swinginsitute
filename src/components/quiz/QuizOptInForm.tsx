@@ -121,9 +121,6 @@ export function QuizOptInForm({ onSubmit, isSubmitting }: QuizOptInFormProps) {
                   }}
                 />
               </FormControl>
-              <p className="text-xs text-muted-foreground mt-1">
-                Add your phone for a free 60-second video tip from Coach Jasha
-              </p>
               <FormMessage />
             </FormItem>
           )}

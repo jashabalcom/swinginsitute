@@ -151,7 +151,7 @@ export function HeroSection() {
                 {/* Coach info overlay - 2026 UPGRADED with better legibility */}
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background/90 via-background/60 to-transparent">
                   <p className="font-display text-xl font-bold text-foreground text-shadow">Coach Jasha Balcom</p>
-                  <p className="text-sm text-foreground/80 text-shadow">Former Pro Player • Mentor to Hundreds • Founder</p>
+                  <p className="text-sm text-foreground/80 text-shadow">Pirates Draft Pick • UGA Alum • Cubs Signee • 20+ Years</p>
                 </div>
               </div>
             </div>

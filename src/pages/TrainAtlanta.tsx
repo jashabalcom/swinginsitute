@@ -111,8 +111,9 @@ export default function TrainAtlanta() {
                 </h1>
 
                 <p className="text-lg text-muted-foreground mb-8 max-w-lg">
-                  Private 1-on-1 hitting instruction with Coach Jasha Balcom—trainer of MLB All-Star Cedric Mullins. 
-                  Perfect Game prep, travel ball development, and college showcase training in Atlanta, GA.
+                  Train with Coach Jasha Balcom—drafted by the Pittsburgh Pirates, Perfect Game 
+                  All-American, UGA alum, Chicago Cubs signee, and the coach behind MLB All-Star 
+                  Cedric Mullins. 20+ years developing elite hitters in Atlanta.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -150,7 +151,7 @@ export default function TrainAtlanta() {
                 <div className="rounded-2xl overflow-hidden border border-border">
                   <img
                     src={coachJasha}
-                    alt="Coach Jasha Balcom - Atlanta baseball hitting coach and trainer of MLB All-Star Cedric Mullins"
+                    alt="Coach Jasha Balcom - Perfect Game All-American, UGA Baseball, Atlanta's top hitting coach"
                     className="w-full h-auto object-cover"
                   />
                 </div>

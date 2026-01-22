@@ -183,7 +183,7 @@ function CoachSection() {
     <div className="flex flex-col md:flex-row gap-6 items-center">
       <img
         src={coachJashaImage}
-        alt="Coach Jasha"
+        alt="Coach Jasha Balcom - Perfect Game All-American, UGA Baseball, Pirates draft pick"
         className="w-32 h-32 rounded-full object-cover border-4 border-primary/20"
       />
       <div className="text-center md:text-left">
@@ -191,8 +191,9 @@ function CoachSection() {
           Why Parents Trust Coach Jasha
         </h3>
         <p className="text-muted-foreground mb-4">
-          With 15+ years of experience training players from youth baseball to the MLB, 
-          Coach Jasha has helped over 1,200 players unlock their potential at the plate.
+          Drafted by the Pittsburgh Pirates. Perfect Game All-American. UGA baseball alum. 
+          Chicago Cubs signee. With 20+ years of experience—including time as a pro scout 
+          and agent—Coach Jasha has helped over 1,200 players unlock their potential.
         </p>
         <div className="flex flex-wrap gap-4 justify-center md:justify-start">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -205,7 +206,7 @@ function CoachSection() {
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Award className="w-4 h-4 text-primary" />
-            <span>15+ Years Experience</span>
+            <span>20+ Years Experience</span>
           </div>
         </div>
       </div>

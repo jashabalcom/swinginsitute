@@ -1,4 +1,4 @@
-// Tracking utility for Facebook Pixel and Google Analytics
+// Tracking utility for Facebook Pixel, Google Analytics, and Google Ads
 // Note: Window.fbq type is declared in FacebookPixel.tsx
 
 declare global {
@@ -7,6 +7,25 @@ declare global {
     dataLayer: unknown[];
   }
 }
+
+// Google Ads Conversion ID
+const GOOGLE_ADS_ID = 'AW-667308121';
+
+// Google Ads conversion tracking
+export const trackGoogleAdsConversion = (
+  conversionLabel: string, 
+  value?: number, 
+  transactionId?: string
+) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'conversion', {
+      send_to: `${GOOGLE_ADS_ID}/${conversionLabel}`,
+      value: value,
+      currency: 'USD',
+      transaction_id: transactionId,
+    });
+  }
+};
 
 // Facebook Pixel tracking
 export const trackFBEvent = (event: string, params?: Record<string, unknown>) => {
@@ -67,18 +86,26 @@ export const trackAddToCart = (productName: string, price: number, productId?: s
 };
 
 // Conversion tracking helpers
-export const trackLead = (source?: string) => {
+export const trackLead = (source?: string, conversionLabel?: string) => {
   trackFBEvent('Lead', { content_name: source || 'strategy_call' });
   trackGAEvent('generate_lead', { event_category: 'engagement', event_label: source });
+  // Google Ads Lead conversion - use provided label or default
+  if (conversionLabel) {
+    trackGoogleAdsConversion(conversionLabel);
+  }
 };
 
-export const trackSignup = (method?: string) => {
+export const trackSignup = (method?: string, conversionLabel?: string) => {
   trackFBEvent('CompleteRegistration', { content_name: method || 'email' });
   trackGAEvent('sign_up', { method: method || 'email' });
+  // Google Ads signup conversion
+  if (conversionLabel) {
+    trackGoogleAdsConversion(conversionLabel);
+  }
 };
 
-export const trackInitiateCheckout = (tier: string, price: number) => {
-  trackFBEvent('InitiateCheckout', { 
+export const trackInitiateCheckout = (tier: string, price: number, conversionLabel?: string) => {
+  trackFBEvent('InitiateCheckout', {
     content_name: tier,
     value: price,
     currency: 'USD'
@@ -88,9 +115,13 @@ export const trackInitiateCheckout = (tier: string, price: number) => {
     value: price,
     items: [{ item_name: tier }]
   });
+  // Google Ads checkout conversion
+  if (conversionLabel) {
+    trackGoogleAdsConversion(conversionLabel, price);
+  }
 };
 
-export const trackPurchase = (tier: string, price: number, transactionId?: string) => {
+export const trackPurchase = (tier: string, price: number, transactionId?: string, conversionLabel?: string) => {
   trackFBEvent('Purchase', {
     content_name: tier,
     value: price,
@@ -107,6 +138,10 @@ export const trackPurchase = (tier: string, price: number, transactionId?: strin
     currency: 'USD',
     items: [{ item_name: tier }]
   });
+  // Google Ads purchase conversion - always fire with value
+  if (conversionLabel) {
+    trackGoogleAdsConversion(conversionLabel, price, transactionId);
+  }
 };
 
 export const trackPageView = (path: string) => {
@@ -125,7 +160,11 @@ export const trackQuizStep = (step: number) => {
   trackGAEvent('quiz_progress', { step, quiz_name: 'swing_assessment' });
 };
 
-export const trackQuizComplete = (profile: string, variant?: string) => {
+export const trackQuizComplete = (profile: string, variant?: string, conversionLabel?: string) => {
   trackFBEvent('Lead', { content_name: 'swing_quiz', lead_type: profile, variant });
   trackGAEvent('generate_lead', { method: 'quiz', profile, variant });
+  // Google Ads quiz lead conversion
+  if (conversionLabel) {
+    trackGoogleAdsConversion(conversionLabel);
+  }
 };

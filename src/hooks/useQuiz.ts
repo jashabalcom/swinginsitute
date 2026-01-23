@@ -85,7 +85,18 @@ export function useQuiz(): {
         contactData.playerName
       );
 
-      trackQuizComplete(profile, abVariant || undefined);
+      // Parse name into first/last for Enhanced Conversions
+      const nameParts = contactData.name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Track quiz completion with Enhanced Conversions user data
+      trackQuizComplete(profile, abVariant || undefined, {
+        email: contactData.email,
+        phone: contactData.phone,
+        firstName,
+        lastName,
+      });
 
       // Navigate to results with state
       navigate('/quiz-results', {

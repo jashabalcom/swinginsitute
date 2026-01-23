@@ -21,9 +21,15 @@ export default function PaymentSuccess() {
       setIsNewUser(true);
     }
     
-    // Track purchase conversion
-    // Note: In production, you'd get the actual tier and price from the session
-    trackPurchase("membership", 149, sessionId || undefined);
+    // Track purchase conversion with Enhanced Conversions user data
+    const userData = user?.email ? {
+      email: user.email,
+      // Parse name if available from user metadata
+      firstName: user.user_metadata?.full_name?.split(' ')[0] || undefined,
+      lastName: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || undefined,
+    } : undefined;
+    
+    trackPurchase("membership", 149, sessionId || undefined, undefined, userData);
   }, [user, sessionId]);
 
   return (

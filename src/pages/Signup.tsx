@@ -33,8 +33,16 @@ export default function Signup() {
         variant: "destructive",
       });
     } else {
-      // Track successful signup
-      trackSignup("email");
+      // Track successful signup with Enhanced Conversions
+      const nameParts = fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      trackSignup("email", undefined, {
+        email,
+        firstName,
+        lastName
+      });
       
       // Send admin email alert for new registration (fire and forget)
       supabase.functions.invoke("admin-email-alerts", {

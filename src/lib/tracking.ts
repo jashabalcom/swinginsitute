@@ -13,7 +13,7 @@ const GOOGLE_ADS_ID = 'AW-667308121';
 
 // Google Ads Conversion Labels
 const CONVERSION_LABELS = {
-  PURCHASE: 'purchase_label', // Replace with your actual label from Google Ads
+  PURCHASE: 'oQV-COSBkO0bENmgmb4C', // Purchase conversion
   QUIZ_LEAD: 'quiz_lead_label', // Replace with your actual label from Google Ads
   SIGNUP: 'signup_label', // Replace with your actual label from Google Ads
 } as const;
@@ -186,10 +186,8 @@ export const trackLead = (source?: string, conversionLabel?: string, userData?: 
 export const trackSignup = (method?: string, conversionLabel?: string, userData?: EnhancedConversionData) => {
   trackFBEvent('CompleteRegistration', { content_name: method || 'email' });
   trackGAEvent('sign_up', { method: method || 'email' });
-  // Google Ads signup conversion
-  if (conversionLabel) {
-    trackGoogleAdsConversion(conversionLabel, undefined, undefined, userData);
-  }
+  // Google Ads signup conversion with Enhanced Conversions - always fire
+  trackGoogleAdsConversion(conversionLabel || CONVERSION_LABELS.SIGNUP, undefined, undefined, userData);
 };
 
 export const trackInitiateCheckout = (tier: string, price: number, conversionLabel?: string, userData?: EnhancedConversionData) => {

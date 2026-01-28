@@ -1,73 +1,51 @@
-# Welcome to your Lovable project
+# Swing Institute  
+**AI-Enhanced Baseball Training & Athlete Development Platform**
 
-## Project info
+## Overview  
+Swing Institute is a performance analytics and coaching platform built to help athletes improve **mechanics, mindset, decision-making, and career development** using **video analysis, AI insights, and structured training systems**.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+This platform reflects my experience as a **professional athlete, MLB coach, and performance strategist**, combined with modern **AI-driven training technology**.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## Key Features  
+- ⚾ Athlete Performance Dashboard  
+- 🎥 Video Swing Analysis & Training Feedback  
+- 🧠 AI-Powered Coaching Insights  
+- 📈 Player Development Tracking  
+- 📅 Training Plans & Drill Libraries  
+- 💬 Coach-to-Athlete Communication System  
+- 🏆 Recruiting & Prospect Development Tools  
+- 🎓 Education Modules for Players & Parents  
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Tech Stack  
+**Frontend:** React / TypeScript  
+**Backend:** Supabase (Auth, Database, Edge Functions)  
+**AI Services:** Performance insight generation & feedback intelligence  
+**Storage:** Media hosting for athlete training content  
+**Automation:** Notifications, progress tracking, training workflows  
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## What This Project Demonstrates  
+- AI-assisted human performance analytics  
+- Data-driven athlete development platforms  
+- Media-heavy application architecture  
+- Coaching workflow automation  
+- Education & mentorship system design  
+- Product building for real-world elite users  
+- Scaling a platform around coaching, training & talent development  
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Impact  
+Used to support **MLB players, collegiate athletes, and youth prospects**, including All-Stars and first-round draft talent.
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Author  
+**Jasha Balcom**  
+Former Chicago Cubs Prospect • MLB Performance Coach  
+AI Product Builder • Cloud Engineer • Athlete Development Architect  
